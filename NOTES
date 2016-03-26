@@ -1,0 +1,7 @@
+* ragel lexer + yacc parser:
+    https://github.com/dgryski/dpc
+    https://github.com/dgryski/trifles/tree/master/matcher
+    https://github.com/dgryski/trifles/tree/master/cstbucket
+
+* balanced parens in ragel:
+    http://stackoverflow.com/questions/12015684/simple-ragel-example-that-balances-parentheses
