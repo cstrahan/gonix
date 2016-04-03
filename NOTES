@@ -5,3 +5,7 @@
 
 * balanced parens in ragel:
     http://stackoverflow.com/questions/12015684/simple-ragel-example-that-balances-parentheses
+
+* for string interning:
+    https://github.com/josharian/intern/blob/master/intern.go
+    https://gist.github.com/karlseguin/6570372

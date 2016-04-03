@@ -1,9 +1,5 @@
 package main
 
-import (
-	"log"
-	/* "strconv" */)
-
 const (
 	IF = iota
 	THEN
@@ -36,6 +32,7 @@ const (
 	SPATH
 	URI
 
+	STR
 	IND_STR
 	IND_STRING_OPEN
 	IND_STRING_CLOSE
@@ -48,13 +45,14 @@ const (
 	DQUOTE = 34
 )
 
-type token struct {
-	token int
-	start int
-	end   int
+type Token struct {
+	TokenType TokenType
+	Start     int
+	End       int
+	Text      []byte
 }
 
-type Token int
+type TokenType int
 
 var tokens = [...]string{
 	IF:           "IF",
@@ -88,14 +86,15 @@ var tokens = [...]string{
 	SPATH: "SPATH",
 	URI:   "URI",
 
+	STR:              "STR",
 	IND_STR:          "IND_STR",
 	IND_STRING_OPEN:  "IND_STRING_OPEN",
 	IND_STRING_CLOSE: "IND_STRING_CLOSE",
 }
 
-func (tok Token) String() string {
+func (tok TokenType) String() string {
 	s := ""
-	if 0 <= tok && tok < Token(len(tokens)) {
+	if 0 <= tok && tok < TokenType(len(tokens)) {
 		s = tokens[tok]
 	}
 	if s == "" {
@@ -105,7 +104,46 @@ func (tok Token) String() string {
 	return s
 }
 
-func lex(data []byte) {
+func unescapeStr(s []byte) []byte {
+	t := []byte{}
+
+	idx := 0
+	var c byte
+	for idx < len(s) {
+		c = s[idx]
+		idx++
+		switch c {
+		case '\\':
+			{
+				c = s[idx]
+				idx++
+				switch c {
+				case 'n':
+					t = append(t, byte('\n'))
+				case 'r':
+					t = append(t, byte('\r'))
+				case 't':
+					t = append(t, byte('\t'))
+				default:
+					t = append(t, byte(c))
+				}
+			}
+		case '\r':
+			{
+				t = append(t, byte('\n'))
+				if s[idx] == '\n' {
+					idx++
+				}
+			}
+		default:
+			t = append(t, byte(c))
+		}
+	}
+
+	return t
+}
+
+func lex(data []byte) []Token {
 
 	var scanner_start int = 66
 	var scanner_first_final int = 66
@@ -138,7 +176,7 @@ func lex(data []byte) {
 
 	_, _, _, _, _, _ = top, ts, te, act, eof, stack
 
-	tokens := make([]token, 0, 0)
+	tokens := make([]Token, 0, 0)
 	_ = tokens
 
 	{
@@ -802,7 +840,7 @@ func lex(data []byte) {
 			{
 				p = (te) - 1
 				{
-					log.Println("TOK:", Token(FLOAT), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(FLOAT), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -813,7 +851,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(NEQ), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(NEQ), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -824,7 +862,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(DOLLAR_CURLY), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DOLLAR_CURLY), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -845,7 +883,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(AND), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(AND), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -856,7 +894,7 @@ func lex(data []byte) {
 			{
 				p = (te) - 1
 				{
-					log.Println("TOK:", Token(IND_STRING_OPEN), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STRING_OPEN), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -877,7 +915,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(IND_STRING_OPEN), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STRING_OPEN), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -908,126 +946,126 @@ func lex(data []byte) {
 				case 48:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(IF), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(IF), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 49:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(THEN), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(THEN), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 50:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(ELSE), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(ELSE), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 51:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(ASSERT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(ASSERT), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 52:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(WITH), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(WITH), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 53:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(LET), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(LET), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 54:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(IN), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(IN), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 55:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(REC), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(REC), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 56:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(INHERIT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(INHERIT), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 57:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(OR_KW), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(OR_KW), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 58:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(ELLIPSIS), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(ELLIPSIS), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 67:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(CONCAT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(CONCAT), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 68:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(ID), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(ID), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 69:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(INT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(INT), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 70:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(FLOAT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(FLOAT), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 75:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(PATH), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(PATH), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 76:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(HPATH), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(HPATH), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 82:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(DOT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(DOT), Start: ts, End: te, Text: nil})
 					}
 
 					break
@@ -1042,7 +1080,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(IMPL), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IMPL), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1053,7 +1091,7 @@ func lex(data []byte) {
 			{
 				p = (te) - 1
 				{
-					log.Println("TOK:", Token(DOT), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DOT), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1064,7 +1102,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(UPDATE), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(UPDATE), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1083,7 +1121,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(LEQ), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(LEQ), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1094,7 +1132,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(SPATH), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(SPATH), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1105,7 +1143,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(EQ), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(EQ), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1116,7 +1154,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(GEQ), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(GEQ), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1127,7 +1165,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(OR), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(OR), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1138,7 +1176,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(DQUOTE), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DQUOTE), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -1159,7 +1197,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(LCURLY), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(LCURLY), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1170,7 +1208,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(RCURLY), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(RCURLY), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1182,7 +1220,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(FLOAT), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(FLOAT), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1212,7 +1250,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(IND_STRING_OPEN), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STRING_OPEN), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -1234,7 +1272,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(PATH), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(PATH), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1246,7 +1284,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(DOT), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DOT), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1258,7 +1296,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(INT), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(INT), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1270,7 +1308,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(ID), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(ID), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1282,7 +1320,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(URI), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(URI), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1294,7 +1332,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(IN), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IN), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -1306,7 +1344,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(HPATH), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(HPATH), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -5601,7 +5639,7 @@ func lex(data []byte) {
 			{
 				p = (te) - 1
 				{
-					log.Println("STR:", string(data[ts:(te)]))
+					tokens = append(tokens, Token{TokenType: TokenType(STR), Start: ts, End: te, Text: data[ts:te]})
 				}
 			}
 		}
@@ -5612,8 +5650,8 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("STR:", string(data[ts:(te-1)]))
-					log.Println("TOK:", Token(DQUOTE), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(STR), Start: ts, End: te - 1, Text: data[ts : te-1]})
+					tokens = append(tokens, Token{TokenType: TokenType(DQUOTE), Start: te - 1, End: te, Text: nil})
 					{
 						top -= 1
 						cs = stack[top]
@@ -5639,7 +5677,7 @@ func lex(data []byte) {
 				case 2:
 					p = (te) - 1
 					{
-						log.Println("STR:", string(data[ts:(te)]))
+						tokens = append(tokens, Token{TokenType: TokenType(STR), Start: ts, End: te, Text: data[ts:te]})
 					}
 
 					break
@@ -5654,7 +5692,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(DOLLAR_CURLY), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DOLLAR_CURLY), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -5675,7 +5713,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(DQUOTE), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DQUOTE), Start: ts, End: te, Text: nil})
 					{
 						top -= 1
 						cs = stack[top]
@@ -5692,7 +5730,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("STR:", string(data[ts:(te)]))
+					tokens = append(tokens, Token{TokenType: TokenType(STR), Start: ts, End: te, Text: data[ts:te]})
 				}
 			}
 		}
@@ -5842,7 +5880,7 @@ func lex(data []byte) {
 			{
 				p = (te) - 1
 				{
-					log.Println("TOK:", Token(IND_STR), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STR), Start: ts, End: te, Text: data[ts:te]})
 				}
 			}
 		}
@@ -5853,7 +5891,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(DOLLAR_CURLY), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DOLLAR_CURLY), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -5874,7 +5912,7 @@ func lex(data []byte) {
 			{
 				p = (te) - 1
 				{
-					log.Println("TOK:", Token(IND_STRING_CLOSE), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STRING_CLOSE), Start: ts, End: te, Text: nil})
 					{
 						top -= 1
 						cs = stack[top]
@@ -5890,7 +5928,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(IND_STR), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STR), Start: ts, End: te, Text: unescapeStr(data[ts+2 : te])})
 				}
 			}
 		}
@@ -5902,7 +5940,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(IND_STR), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STR), Start: ts, End: te, Text: data[ts:te]})
 				}
 			}
 		}
@@ -5914,7 +5952,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(IND_STR), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STR), Start: ts, End: te, Text: []byte("'")})
 				}
 			}
 		}
@@ -5926,7 +5964,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(IND_STRING_CLOSE), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STRING_CLOSE), Start: ts, End: te, Text: nil})
 					{
 						top -= 1
 						cs = stack[top]
@@ -5942,7 +5980,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(IND_STR), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STR), Start: ts, End: te, Text: []byte("$")})
 				}
 			}
 		}
@@ -5953,7 +5991,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(IND_STR), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STR), Start: ts, End: te, Text: []byte("''")})
 				}
 			}
 		}
@@ -6152,7 +6190,7 @@ func lex(data []byte) {
 			{
 				p = (te) - 1
 				{
-					log.Println("TOK:", Token(FLOAT), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(FLOAT), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6163,7 +6201,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(NEQ), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(NEQ), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6174,7 +6212,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(DOLLAR_CURLY), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DOLLAR_CURLY), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -6195,7 +6233,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(AND), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(AND), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6206,7 +6244,7 @@ func lex(data []byte) {
 			{
 				p = (te) - 1
 				{
-					log.Println("TOK:", Token(IND_STRING_OPEN), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STRING_OPEN), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -6227,7 +6265,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(IND_STRING_OPEN), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STRING_OPEN), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -6258,126 +6296,126 @@ func lex(data []byte) {
 				case 12:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(IF), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(IF), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 13:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(THEN), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(THEN), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 14:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(ELSE), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(ELSE), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 15:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(ASSERT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(ASSERT), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 16:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(WITH), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(WITH), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 17:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(LET), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(LET), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 18:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(IN), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(IN), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 19:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(REC), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(REC), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 20:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(INHERIT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(INHERIT), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 21:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(OR_KW), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(OR_KW), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 22:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(ELLIPSIS), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(ELLIPSIS), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 31:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(CONCAT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(CONCAT), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 32:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(ID), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(ID), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 33:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(INT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(INT), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 34:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(FLOAT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(FLOAT), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 39:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(PATH), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(PATH), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 40:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(HPATH), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(HPATH), Start: ts, End: te, Text: nil})
 					}
 
 					break
 				case 46:
 					p = (te) - 1
 					{
-						log.Println("TOK:", Token(DOT), ts, te)
+						tokens = append(tokens, Token{TokenType: TokenType(DOT), Start: ts, End: te, Text: nil})
 					}
 
 					break
@@ -6392,7 +6430,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(IMPL), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IMPL), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6403,7 +6441,7 @@ func lex(data []byte) {
 			{
 				p = (te) - 1
 				{
-					log.Println("TOK:", Token(DOT), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DOT), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6414,7 +6452,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(UPDATE), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(UPDATE), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6433,7 +6471,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(LEQ), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(LEQ), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6444,7 +6482,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(SPATH), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(SPATH), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6455,7 +6493,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(EQ), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(EQ), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6466,7 +6504,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(GEQ), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(GEQ), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6477,7 +6515,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(OR), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(OR), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6488,7 +6526,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(DQUOTE), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DQUOTE), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -6509,7 +6547,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(LCURLY), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(LCURLY), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -6530,7 +6568,7 @@ func lex(data []byte) {
 			{
 				te = p + 1
 				{
-					log.Println("TOK:", Token(RCURLY), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(RCURLY), Start: ts, End: te, Text: nil})
 					{
 						top -= 1
 						cs = stack[top]
@@ -6547,7 +6585,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(FLOAT), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(FLOAT), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6577,7 +6615,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(IND_STRING_OPEN), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IND_STRING_OPEN), Start: ts, End: te, Text: nil})
 					{
 						{
 							if len(stack) <= top {
@@ -6599,7 +6637,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(PATH), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(PATH), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6611,7 +6649,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(DOT), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(DOT), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6623,7 +6661,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(INT), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(INT), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6635,7 +6673,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(ID), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(ID), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6647,7 +6685,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(URI), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(URI), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6659,7 +6697,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(IN), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(IN), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -6671,7 +6709,7 @@ func lex(data []byte) {
 				te = p
 				p = p - 1
 				{
-					log.Println("TOK:", Token(HPATH), ts, te)
+					tokens = append(tokens, Token{TokenType: TokenType(HPATH), Start: ts, End: te, Text: nil})
 				}
 			}
 		}
@@ -11675,4 +11713,5 @@ func lex(data []byte) {
 		{
 		}
 	}
+	return tokens
 }

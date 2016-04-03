@@ -1,10 +1,5 @@
 package main
 
-import (
-  "log"
-  /* "strconv" */
-)
-
 const (
   IF = iota
   THEN
@@ -37,6 +32,7 @@ const (
   SPATH
   URI
 
+  STR
   IND_STR
   IND_STRING_OPEN
   IND_STRING_CLOSE
@@ -49,13 +45,14 @@ const (
   DQUOTE = 34
 )
 
-type token struct {
-  token int
-  start int
-  end   int
+type Token struct {
+  TokenType TokenType
+  Start     int
+  End       int
+  Text      []byte
 }
 
-type Token int
+type TokenType int
 
 var tokens = [...]string{
   IF:           "IF",
@@ -89,14 +86,15 @@ var tokens = [...]string{
   SPATH: "SPATH",
   URI:   "URI",
 
+  STR:              "STR",
   IND_STR:          "IND_STR",
   IND_STRING_OPEN:  "IND_STRING_OPEN",
   IND_STRING_CLOSE: "IND_STRING_CLOSE",
 }
 
-func (tok Token) String() string {
+func (tok TokenType) String() string {
   s := ""
-  if 0 <= tok && tok < Token(len(tokens)) {
+  if 0 <= tok && tok < TokenType(len(tokens)) {
     s = tokens[tok]
   }
   if s == "" {
@@ -106,9 +104,43 @@ func (tok Token) String() string {
   return s
 }
 
-#define TOK(type) log.Println("TOK:", Token(type), ts, te)
+#define EMITS(type) EMIT(type, ts, te)
+#define EMIT(type, ts, te) EMIT_TEXT(type, ts, te, nil)
+#define EMIT_TEXT(type, ts, te, text) tokens = append(tokens, Token{ TokenType: TokenType(type), Start: ts, End: te, Text: text })
 
-func lex(data []byte) {
+func unescapeStr(s []byte) []byte {
+  t := []byte{}
+
+  idx := 0
+  var c byte
+  for ; idx < len(s) ; {
+    c = s[idx]
+    idx++
+    switch c {
+    case '\\': {
+      c = s[idx]
+      idx++
+      switch c {
+      case 'n': t = append(t, byte('\n'))
+      case 'r': t = append(t, byte('\r'))
+      case 't': t = append(t, byte('\t'))
+      default: t = append(t, byte(c))
+      }
+    }
+    case '\r': {
+      t = append(t, byte('\n'))
+      if s[idx] == '\n' {
+        idx++
+      }
+    }
+    default: t = append(t, byte(c))
+    }
+  }
+
+  return t
+}
+
+func lex(data []byte) []Token {
 %% machine scanner;
 %% write data;
 
@@ -133,7 +165,7 @@ func lex(data []byte) {
 
   _, _, _, _, _, _ = top, ts, te, act, eof, stack
 
-  tokens := make([]token, 0, 0)
+  tokens := make([]Token, 0, 0)
   _ = tokens
 
 %%{
@@ -150,133 +182,135 @@ func lex(data []byte) {
 
   string := |*
     ( [^$"\\] | '$' [^{"\\] | '\\' any | '$\\' any )* '$"'
-                  { log.Println("STR:", string(data[ts:(te-1)]));
-                    TOK(DQUOTE);
+                  { EMIT_TEXT(STR, ts, te-1, data[ts:te-1]);
+                    EMIT(DQUOTE, te-1, te);
                     fret;
                   };
     ( [^$"\\] | '$' [^{"\\] | '\\' any | '$\\' any )+
-                  { log.Println("STR:", string(data[ts:(te)]));
+                  { EMIT_TEXT(STR, ts, te, data[ts:te])
                   };
-    "${"          { TOK(DOLLAR_CURLY); fcall inside_dollar_curly; };
-    '"'           { TOK(DQUOTE); fret; };
+    "${"          { EMITS(DOLLAR_CURLY);
+                    fcall inside_dollar_curly; };
+    '"'           { EMITS(DQUOTE);
+                    fret; };
   *|;
 
   ind_string := |*
     ( [^$'] | '$' [^{'] | "'" [^'$] )+
-                  { TOK(IND_STR) };
-    "''$"         { TOK(IND_STR) };
-    "'''"         { TOK(IND_STR) };
-    "''\\" any    { TOK(IND_STR) };
-    "${"          { TOK(DOLLAR_CURLY);
+                  { EMIT_TEXT(IND_STR, ts, te, data[ts:te]) };
+    "''$"         { EMIT_TEXT(IND_STR, ts, te, []byte("$")) };
+    "'''"         { EMIT_TEXT(IND_STR, ts, te, []byte("''")) };
+    "''\\" any    { EMIT_TEXT(IND_STR, ts, te, unescapeStr(data[ts+2:te])) };
+    "${"          { EMITS(DOLLAR_CURLY);
                     fcall inside_dollar_curly; };
-    "''"          { TOK(IND_STRING_CLOSE);
+    "''"          { EMITS(IND_STRING_CLOSE);
                     fret; };
-    "'"           { TOK(IND_STR) };
+    "'"           { EMIT_TEXT(IND_STR, ts, te, []byte("'")) };
   *|;
 
   inside_dollar_curly := |*
-    "if"          { TOK(IF) };
-    "then"        { TOK(THEN) };
-    "else"        { TOK(ELSE) };
-    "assert"      { TOK(ASSERT) };
-    "with"        { TOK(WITH) };
-    "let"         { TOK(LET) };
-    "in"          { TOK(IN) };
-    "rec"         { TOK(REC) };
-    "inherit"     { TOK(INHERIT) };
-    "or"          { TOK(OR_KW) };
-    "..."         { TOK(ELLIPSIS) };
+    "if"          { EMITS(IF) };
+    "then"        { EMITS(THEN) };
+    "else"        { EMITS(ELSE) };
+    "assert"      { EMITS(ASSERT) };
+    "with"        { EMITS(WITH) };
+    "let"         { EMITS(LET) };
+    "in"          { EMITS(IN) };
+    "rec"         { EMITS(REC) };
+    "inherit"     { EMITS(INHERIT) };
+    "or"          { EMITS(OR_KW) };
+    "..."         { EMITS(ELLIPSIS) };
 
-    "=="          { TOK(EQ) };
-    "!="          { TOK(NEQ) };
-    "<="          { TOK(LEQ) };
-    ">="          { TOK(GEQ) };
-    "&&"          { TOK(AND) };
-    "||"          { TOK(OR) };
-    "->"          { TOK(IMPL) };
-    "//"          { TOK(UPDATE) };
-    "++"          { TOK(CONCAT) };
+    "=="          { EMITS(EQ) };
+    "!="          { EMITS(NEQ) };
+    "<="          { EMITS(LEQ) };
+    ">="          { EMITS(GEQ) };
+    "&&"          { EMITS(AND) };
+    "||"          { EMITS(OR) };
+    "->"          { EMITS(IMPL) };
+    "//"          { EMITS(UPDATE) };
+    "++"          { EMITS(CONCAT) };
 
-    ID            { TOK(ID) };
-    INT           { TOK(INT) };
-    FLOAT         { TOK(FLOAT) };
+    ID            { EMITS(ID) };
+    INT           { EMITS(INT) };
+    FLOAT         { EMITS(FLOAT) };
 
-    "${"          { TOK(DOLLAR_CURLY);
+    "${"          { EMITS(DOLLAR_CURLY);
                     fcall inside_dollar_curly; };
-    "}"           { TOK(RCURLY)
+    "}"           { EMITS(RCURLY)
                     fret; };
-    "{"           { TOK(LCURLY)
+    "{"           { EMITS(LCURLY)
                     fcall inside_dollar_curly; };
 
     "''" (' '* '\n')?
-                  { TOK(IND_STRING_OPEN);
+                  { EMITS(IND_STRING_OPEN);
                     fcall ind_string; };
 
-    PATH          { TOK(PATH) };
-    HPATH         { TOK(HPATH) };
-    SPATH         { TOK(SPATH) };
-    URI           { TOK(URI) };
+    PATH          { EMITS(PATH) };
+    HPATH         { EMITS(HPATH) };
+    SPATH         { EMITS(SPATH) };
+    URI           { EMITS(URI) };
 
     [ \t\r\n]+;
 
     SCOMMENT;
     LCOMMENT;
 
-    "."           { TOK(DOT) };
+    "."           { EMITS(DOT) };
 
-    '"'           { TOK(DQUOTE);
+    '"'           { EMITS(DQUOTE);
                     fcall string; };
   *|;
 
   main := |*
-    "if"          { TOK(IF) };
-    "then"        { TOK(THEN) };
-    "else"        { TOK(ELSE) };
-    "assert"      { TOK(ASSERT) };
-    "with"        { TOK(WITH) };
-    "let"         { TOK(LET) };
-    "in"          { TOK(IN) };
-    "rec"         { TOK(REC) };
-    "inherit"     { TOK(INHERIT) };
-    "or"          { TOK(OR_KW) };
-    "..."         { TOK(ELLIPSIS) };
+    "if"          { EMITS(IF) };
+    "then"        { EMITS(THEN) };
+    "else"        { EMITS(ELSE) };
+    "assert"      { EMITS(ASSERT) };
+    "with"        { EMITS(WITH) };
+    "let"         { EMITS(LET) };
+    "in"          { EMITS(IN) };
+    "rec"         { EMITS(REC) };
+    "inherit"     { EMITS(INHERIT) };
+    "or"          { EMITS(OR_KW) };
+    "..."         { EMITS(ELLIPSIS) };
 
-    "=="          { TOK(EQ) };
-    "!="          { TOK(NEQ) };
-    "<="          { TOK(LEQ) };
-    ">="          { TOK(GEQ) };
-    "&&"          { TOK(AND) };
-    "||"          { TOK(OR) };
-    "->"          { TOK(IMPL) };
-    "//"          { TOK(UPDATE) };
-    "++"          { TOK(CONCAT) };
+    "=="          { EMITS(EQ) };
+    "!="          { EMITS(NEQ) };
+    "<="          { EMITS(LEQ) };
+    ">="          { EMITS(GEQ) };
+    "&&"          { EMITS(AND) };
+    "||"          { EMITS(OR) };
+    "->"          { EMITS(IMPL) };
+    "//"          { EMITS(UPDATE) };
+    "++"          { EMITS(CONCAT) };
 
-    ID            { TOK(ID) };
-    INT           { TOK(INT) };
-    FLOAT         { TOK(FLOAT) };
+    ID            { EMITS(ID) };
+    INT           { EMITS(INT) };
+    FLOAT         { EMITS(FLOAT) };
 
-    "${"          { TOK(DOLLAR_CURLY);
+    "${"          { EMITS(DOLLAR_CURLY);
                     fcall inside_dollar_curly; };
-    "}"           { TOK(RCURLY) };
-    "{"           { TOK(LCURLY) };
+    "}"           { EMITS(RCURLY) };
+    "{"           { EMITS(LCURLY) };
 
     "''" (' '* '\n')?
-                  { TOK(IND_STRING_OPEN);
+                  { EMITS(IND_STRING_OPEN);
                     fcall ind_string; };
 
-    PATH          { TOK(PATH) };
-    HPATH         { TOK(HPATH) };
-    SPATH         { TOK(SPATH) };
-    URI           { TOK(URI) };
+    PATH          { EMITS(PATH) };
+    HPATH         { EMITS(HPATH) };
+    SPATH         { EMITS(SPATH) };
+    URI           { EMITS(URI) };
 
     [ \t\r\n]+;
 
     SCOMMENT;
     LCOMMENT;
 
-    "."           { TOK(DOT) };
+    "."           { EMITS(DOT) };
 
-    '"'           { TOK(DQUOTE);
+    '"'           { EMITS(DQUOTE);
                     fcall string; };
   *|;
 
@@ -290,4 +324,5 @@ func lex(data []byte) {
 %% write init;
 %% write exec;
 
+  return tokens
 }
