@@ -2,15 +2,16 @@ with import <nixpkgs> { };
 
 runCommand "dummy" {
   buildInputs = [
-    go goPackages.tools
+    go
     stdenv openssl pkgconfig
     cyrus_sasl # for mgo
     ragel
+    stdenv
+    stdenv.cc
   ];
   shellHook = ''
-    export GO15VENDOREXPERIMENT=1
     unset SSL_CERT_FILE
-    export GOPATH=$(readlink -f ../..):${go}/share/go
+    export GOPATH=$(readlink -f ../../../..):${go}/share/go
     PATH=$(readlink -f ../../bin):$PATH
   '';
 } ""
