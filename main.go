@@ -1,6 +1,9 @@
 package main
 
-import "log"
+import (
+	"log"
+	"strconv"
+)
 
 // var ex = []byte(". } http://foo.com <foo> 123 ~/a in 123.1 inter inherit ++ -> ${ ./foo/bar /** **/ ./baz # asdf\n foobar")
 var ex = []byte(`"abc ${foo.bar {}}  baz" ''foo ''$ baz''`)
@@ -276,160 +279,397 @@ func (self parser) parseExprOp() (Expr, error) {
 	haveImpl := false
 
 	for {
-		// gobble-up all unary ops
-		exprs = append(exprs, nil)
-		link := &exprs[exprn]
-		exprn++
-	UNARY:
-		tok := self.tok(0)
-		switch tok.TokenType {
-		case NOT:
-			self.advance(1)
-
-			expr := ExprOpNot{tok.Pos, nil}
-			exprs = append(exprs, expr)
-			link = &expr.Expr
-
-			goto UNARY
-		case MINUS:
-			self.advance(1)
-
-			expr := ExprApp{tok.Pos, []byte("__sub"), nil}
-			exprs = append(exprs, expr)
-			link = &expr.Arg
-
-			goto UNARY
+		// push all unary operators
+		for {
+			tok := self.tok(0)
+			if tok.TokenType == NOT {
+				ops = append(ops, tok)
+				opn++
+				self.advance(1)
+			} else if tok.TokenType == MINUS {
+				tok.TokenType = NEGATE
+				ops = append(ops, tok)
+				opn++
+				self.advance(1)
+			}
 		}
 
-		// parse expr
+		// parse/push expr
 		expr, err := self.parseExprApp()
 		if err != nil {
 			return nil, err
 		}
-		*link = expr
+		exprs = append(exprs, expr)
 
 		// next op
-		// if this is the second occurence of a non-associative operator, bail.
-		tok = self.tok(0)
-		switch tok.TokenType {
-		case EQ:
-			if haveEq {
-				return nil, UnexpectedToken{}
-			}
-			haveEq = true
-		case NEQ:
-			if haveEq {
-				return nil, UnexpectedToken{}
-			}
-			haveEq = true
-		case '<':
-		case LEQ:
-		case '>':
-		case GEQ:
-		case AND:
-		case OR:
-		case IMPL:
-			if haveImpl {
-				return nil, UnexpectedToken{}
-			}
-			haveImpl = true
-		case UPDATE:
-		case '?':
-		case '+':
-		case '-':
-		case '*':
-		case '/':
-		case CONCAT:
-		default:
-			// we've consumed the last op; break
-			goto SHUNT
-		}
+		op1 := self.tok(0)
+		if isOperator(op1.TokenType) {
+			op1_ := operators[op1.TokenType]
 
-		// otherwise, push op and continue
-		ops = append(ops, tok)
-		opn++
-	}
-
-SHUNT:
-	// shunting-yard
-
-	// Associativity:
-	// %nonassoc IMPL
-	// %left OR
-	// %left AND
-	// %nonassoc EQ NEQ
-	// %left '<' '>' LEQ GEQ
-	// %right UPDATE
-	// %left NOT
-	// %left '+' '-'
-	// %left '*' '/'
-	// %right CONCAT
-	// %nonassoc '?'
-	// %nonassoc NEGATE
-	for {
-		if opn == 0 {
-			return exprs[0], nil
-		}
-
-		opn--
-		op1 := ops[opn]
-
-		for opn > 0 {
-			op2 := ops[opn-1]
-
-			// all cases where:
-			//   * op1 is left-associative and its precedence is less than or equal to that of op2, or
-			//   * op1 is right associative, and has precedence less than that of op2
+			// sanity check
 			switch op1.TokenType {
 			case EQ:
+				if haveEq {
+					return nil, UnexpectedToken{}
+				}
+				haveEq = true
 			case NEQ:
-			case '<':
-			case LEQ:
-			case '>':
-			case GEQ:
-			case AND:
-			case OR:
+				if haveEq {
+					return nil, UnexpectedToken{}
+				}
+				haveEq = true
 			case IMPL:
-			case UPDATE:
-			case '?':
-			case '+':
-			case '-':
-			case '*':
-			case '/':
-			case CONCAT:
+				if haveImpl {
+					return nil, UnexpectedToken{}
+				}
+				haveImpl = true
 			}
 
-			switch op2.TokenType {
-			case EQ:
-			case NEQ:
-			case '<':
-			case LEQ:
-			case '>':
-			case GEQ:
-			case AND:
-			case OR:
-			case IMPL:
-			case UPDATE:
-			case '?':
-			case '+':
-			case '-':
-			case '*':
-			case '/':
-			case CONCAT:
-			default:
-				// we've consumed the last op; break
-				goto SHUNT
+			for opn > 0 {
+				op2 := ops[opn-1]
+				op2_ := operators[op2.TokenType]
+				if op1_.Assoc == ASSOC_LEFT && op1_.Prec <= op2_.Prec ||
+					op1_.Assoc == ASSOC_RIGHT && op1_.Prec < op2_.Prec {
+					opn-- // pop op2 off stack
+					// TODO: produce/push expr
+					switch op2.TokenType {
+					case '!':
+						exprs[exprn-1] = ExprOpNot{op2.Pos, exprs[exprn-1]}
+					case NEGATE:
+						exprs[exprn-1] = ExprOpNegate{op2.Pos, exprs[exprn-1]}
+					case EQ:
+						exprs[exprn-2] = ExprOpEQ{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case NEQ:
+						exprs[exprn-2] = ExprOpNEQ{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case '<':
+						exprs[exprn-2] = ExprOpLE{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case LEQ:
+						exprs[exprn-2] = ExprOpLEQ{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case '>':
+						exprs[exprn-2] = ExprOpGE{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case GEQ:
+						exprs[exprn-2] = ExprOpGEQ{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case AND:
+						exprs[exprn-2] = ExprOpAnd{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case OR:
+						exprs[exprn-2] = ExprOpOr{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case IMPL:
+						exprs[exprn-2] = ExprOpImpl{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case UPDATE:
+						exprs[exprn-2] = ExprOpUpdate{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case '?':
+						exprs[exprn-2] = ExprOpHasAttr{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case '+':
+						exprs[exprn-2] = ExprOpAdd{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case '-':
+						exprs[exprn-2] = ExprOpSub{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case '*':
+						exprs[exprn-2] = ExprOpMult{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case '/':
+						exprs[exprn-2] = ExprOpDiv{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					case CONCAT:
+						exprs[exprn-2] = ExprOpConcat{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
+						exprn--
+					}
+				} else {
+					break
+				}
 			}
 
-			//opn--
+			// push the new op to the stack
+			ops = append(ops, op1)
+			opn++
+		} else {
+			// no more operators/exprs; pop remaining ops from stack
+			// TODO: find good way to dedupe this
+			for opn > 0 {
+				op := ops[opn-1]
+				switch op.TokenType {
+				case '!':
+					exprs[exprn-1] = ExprOpNot{op.Pos, exprs[exprn-1]}
+				case NEGATE:
+					exprs[exprn-1] = ExprOpNegate{op.Pos, exprs[exprn-1]}
+				case EQ:
+					exprs[exprn-2] = ExprOpEQ{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case NEQ:
+					exprs[exprn-2] = ExprOpNEQ{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case '<':
+					exprs[exprn-2] = ExprOpLE{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case LEQ:
+					exprs[exprn-2] = ExprOpLEQ{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case '>':
+					exprs[exprn-2] = ExprOpGE{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case GEQ:
+					exprs[exprn-2] = ExprOpGEQ{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case AND:
+					exprs[exprn-2] = ExprOpAnd{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case OR:
+					exprs[exprn-2] = ExprOpOr{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case IMPL:
+					exprs[exprn-2] = ExprOpImpl{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case UPDATE:
+					exprs[exprn-2] = ExprOpUpdate{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case '?':
+					exprs[exprn-2] = ExprOpHasAttr{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case '+':
+					exprs[exprn-2] = ExprOpAdd{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case '-':
+					exprs[exprn-2] = ExprOpSub{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case '*':
+					exprs[exprn-2] = ExprOpMult{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case '/':
+					exprs[exprn-2] = ExprOpDiv{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				case CONCAT:
+					exprs[exprn-2] = ExprOpConcat{op.Pos, exprs[exprn-2], exprs[exprn-1]}
+					exprn--
+				}
+			}
 		}
-
 	}
 
-	return undefined(), nil
+	return exprs[0], nil
+}
+
+const (
+	ASSOC_LEFT  = 0
+	ASSOC_RIGHT = 1
+	ASSOC_NONE  = 2
+)
+
+type Op struct {
+	Assoc int
+	Prec  int
+}
+
+var operators = [...]Op{
+	IMPL:   Op{Assoc: ASSOC_NONE, Prec: 0},
+	OR:     Op{Assoc: ASSOC_LEFT, Prec: 1},
+	AND:    Op{Assoc: ASSOC_LEFT, Prec: 2},
+	EQ:     Op{Assoc: ASSOC_NONE, Prec: 3},
+	NEQ:    Op{Assoc: ASSOC_NONE, Prec: 3},
+	'<':    Op{Assoc: ASSOC_LEFT, Prec: 4},
+	'>':    Op{Assoc: ASSOC_LEFT, Prec: 4},
+	LEQ:    Op{Assoc: ASSOC_LEFT, Prec: 4},
+	GEQ:    Op{Assoc: ASSOC_LEFT, Prec: 4},
+	UPDATE: Op{Assoc: ASSOC_RIGHT, Prec: 5},
+	NOT:    Op{Assoc: ASSOC_LEFT, Prec: 6},
+	'+':    Op{Assoc: ASSOC_LEFT, Prec: 7},
+	'-':    Op{Assoc: ASSOC_LEFT, Prec: 7},
+	'*':    Op{Assoc: ASSOC_LEFT, Prec: 8},
+	'/':    Op{Assoc: ASSOC_LEFT, Prec: 8},
+	CONCAT: Op{Assoc: ASSOC_RIGHT, Prec: 9},
+	'?':    Op{Assoc: ASSOC_NONE, Prec: 10},
+	NEGATE: Op{Assoc: ASSOC_NONE, Prec: 11},
+}
+
+func isOperator(ty TokenType) bool {
+	return ty == IMPL ||
+		ty == OR ||
+		ty == AND ||
+		ty == EQ ||
+		ty == NEQ ||
+		ty == '<' ||
+		ty == '>' ||
+		ty == LEQ ||
+		ty == GEQ ||
+		ty == UPDATE ||
+		ty == NOT ||
+		ty == '+' ||
+		ty == '-' ||
+		ty == '*' ||
+		ty == '/' ||
+		ty == CONCAT ||
+		ty == '?' ||
+		ty == NEGATE
 }
 
 func (self parser) parseExprApp() (Expr, error) {
+	expr, err := self.parseExprSelect()
+	if err != nil {
+		return nil, err
+	}
+
+	for {
+		// TODO: need way to know if parse really failed
+		body, err := self.parseExprSelect()
+		if err != nil {
+			return nil, err
+		}
+
+		expr = ExprApp{Pos{}, expr, body}
+	}
+
+	return expr, nil
+}
+
+func (self parser) parseExprSelect() (Expr, error) {
+	simple, err := self.parseExprSimple()
+	if err != nil {
+		return nil, err
+	}
+
+	tok := self.tok(0)
+	switch tok.TokenType {
+	case DOT:
+		path, err := self.parseAttrPath()
+		if err != nil {
+			return nil, err
+		}
+
+		var def Expr
+		tok := self.tok(0)
+		if tok.TokenType == OR_KW {
+			self.advance(1)
+			def, err = self.parseExprSimple()
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return ExprSelect{Pos{}, simple, path, def}, nil
+	case OR_KW:
+		return ExprApp{Pos{}, simple, ExprVar{tok.Pos, []byte("or")}}, nil
+	}
+
+	return simple, nil
+}
+
+func (self parser) parseExprSimple() (Expr, error) {
+	t1 := self.tok(0)
+	switch t1.TokenType {
+	case ID:
+		self.advance(1)
+		return ExprVar{t1.Pos, t1.Text}, nil
+	case INT:
+		self.advance(1)
+
+		n, err := strconv.ParseInt(string(t1.Text), 10, 32)
+		if err != nil {
+			return nil, err
+		}
+
+		return ExprInt{int(n)}, nil
+	// case FLOAT:  // TODO
+	case '"':
+		self.advance(1)
+
+		stringParts, err := self.parseStringParts()
+		if err != nil {
+			return nil, err
+		}
+		_, err = self.mustMatch('"', 0)
+		if err != nil {
+			return nil, err
+		}
+		self.advance(1)
+		return stringParts, nil
+	case IND_STRING_OPEN:
+		self.advance(1)
+
+		stringParts, err := self.parseStringParts()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = self.mustMatch(IND_STRING_CLOSE, 0)
+		if err != nil {
+			return nil, err
+		}
+
+		self.advance(1)
+		return stringParts, nil
+	case PATH:
+		self.advance(1)
+		return ExprPath{string(t1.Text)}, nil
+	case HPATH:
+		self.advance(1)
+		return ExprPath{string(t1.Text)}, nil
+	case SPATH:
+		self.advance(1)
+		return ExprPath{string(t1.Text)}, nil
+	case URI:
+		self.advance(1)
+		return ExprString{t1.Text}, nil
+	case '(':
+		self.advance(1)
+
+		expr, err := self.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = self.mustMatch(')', 0)
+		if err != nil {
+			return nil, err
+		}
+
+		self.advance(1)
+		return expr, nil
+	case LET:
+		self.advance(1)
+		_, err := self.mustMatch('{', 0)
+		if err != nil {
+			return nil, err
+		}
+
+		binds, err := self.parseBinds()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = self.mustMatch('}', 0)
+		if err != nil {
+			return nil, err
+		}
+
+		binds.Recursive = true
+		return ExprSelect{Pos{}, binds, []byte("body"), nil}
+	case REC:
+	case '{':
+	case '[':
+	}
+	return undefined(), nil
+}
+
+func (self parser) parseAttrPath() ([]AttrName, error) {
+	return []AttrName{}, nil
+}
+
+func (self parser) parseStringParts() (Expr, error) {
+	return undefined(), nil
+}
+
+func (self parser) parseBinds() (ExprAttrs, error) {
 	return undefined(), nil
 }
 
@@ -439,6 +679,18 @@ type Expr interface{}
 
 type Formal struct {
 	Name Symbol
+}
+
+type ExprAttrs struct {
+	Recursive bool
+	AttrDefs  map[Symbol]AttrDef
+}
+
+type AttrDef struct {
+	Inherited bool
+	Expr      Expr
+	//Pos Pos
+	//Displacement int
 }
 
 type ExprLambda struct {
@@ -475,6 +727,107 @@ type ExprIf struct {
 	Else Expr
 }
 
+type ExprOpNegate struct {
+	Pos
+	Expr Expr
+}
+
+type ExprOpNEQ struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpEQ struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpLE struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpLEQ struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpGE struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpGEQ struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpAnd struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpOr struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpImpl struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpUpdate struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpHasAttr struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpAdd struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpSub struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpMult struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpDiv struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
+type ExprOpConcat struct {
+	Pos
+	Expr1 Expr
+	Expr2 Expr
+}
+
 type ExprOpNot struct {
 	Pos
 	Expr Expr
@@ -486,9 +839,33 @@ type ExprApp struct {
 	Arg Expr
 }
 
-type ExpVar struct {
+type ExprVar struct {
 	Pos
 	Name Symbol
+}
+
+type ExprSelect struct {
+	Pos
+	Expr     Expr
+	AttrPath []AttrName
+	Def      Expr
+}
+
+type AttrName struct {
+	Symbol Symbol
+	Expr   Expr
+}
+
+type ExprInt struct {
+	Val int
+}
+
+type ExprPath struct {
+	Path string
+}
+
+type ExprString struct {
+	String []byte
 }
 
 //--------------------------------

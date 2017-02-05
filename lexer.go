@@ -38,25 +38,25 @@ const (
 	SPATH
 	URI
 
-	STR
-	IND_STR
-	IND_STRING_OPEN
-	IND_STRING_CLOSE
-
 	// ASCII Chars
 	LCURLY = 123
 	RCURLY = 125
 	DOT    = 46
 	SQUOTE = 39
 	DQUOTE = 34
-
-	// uh....
 	COLON  = 58
 	SCOLON = 59
 	AT     = 64
 	MINUS  = 45
 	PLUS   = 43
 	NOT    = 33
+
+	// Non-ASCII cont.
+	NEGATE           = 126
+	STR              = 127
+	IND_STR          = 128
+	IND_STRING_OPEN  = 129
+	IND_STRING_CLOSE = 130
 )
 
 type Token struct {
