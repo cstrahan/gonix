@@ -70,6 +70,9 @@ type Pos struct {
 	End   int
 }
 
+//func (*Pos) String() string {
+//}
+
 type TokenType int
 
 var tokens = [...]string{

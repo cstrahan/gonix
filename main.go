@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 )
@@ -19,16 +20,112 @@ var ex = []byte(`"abc ${foo.bar {}}  baz" ''foo ''$ baz''`)
 
 //var ex = []byte(`foo: bar`)
 
+func printTok(tok Token) string {
+	return fmt.Sprintf("%v:%v  %s  [%s]", tok.Pos.Start, tok.Pos.End, tok.TokenType, string(tok.Text))
+}
+
 func main() {
 	log.Println("LEXING")
 	tokens := lex(ex)
-	log.Println(tokens)
+	for _, tok := range tokens {
+		log.Println(printTok(tok))
+		//log.Println(tok)
+	}
+	//log.Println(tokens)
 }
 
 type parser struct {
 	pos    int
 	tokens []Token
 	data   []byte
+}
+
+func showAttrPath(attrPath []AttrName) string {
+	out := ""
+	first := false
+	for _, i := range attrPath {
+		if !first {
+			out = out + "."
+		} else {
+			first = false
+		}
+
+		if i.Expr == nil {
+			out = out + string(i.Symbol)
+		} else {
+			out = out + "\"${" + "<EXPR>" + "}" // TODO
+			//out = out + "\"${" + i.Expr + "}" // TODO
+		}
+	}
+
+	return out
+}
+
+func dupAttrPath(attrPath []AttrName, pos Pos, prevPos Pos) error {
+	return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", showAttrPath(attrPath), "???", "???")
+	//return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", showAttrPath(attrPath), pos, prevPos)
+}
+
+func dupAttrSym(attr Symbol, pos Pos, prevPos Pos) error {
+	return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", attr, "???", "???")
+	//return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", attr, pos, prevPos)
+}
+
+func addAttr(attrs ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
+	for _, attr := range attrPath[:len(attrPath)-1] {
+		if attr.Expr == nil {
+			if existing, ok := attrs.AttrDefs[string(attr.Symbol)]; ok {
+				if !existing.Inherited {
+					if prevAttrs, ok := existing.Expr.(ExprAttrs); ok {
+						attrs = prevAttrs
+					} else {
+						return dupAttrPath(attrPath, pos, existing.Pos)
+					}
+				} else {
+					return dupAttrPath(attrPath, pos, existing.Pos)
+				}
+			} else {
+				nested := ExprAttrs{}
+				attrs.AttrDefs[string(attr.Symbol)] = AttrDef{
+					Expr:      nested,
+					Inherited: false,
+				}
+				attrs = nested
+			}
+		} else {
+			nested := ExprAttrs{}
+			attrs.DynamicAttrDefs[string(attr.Symbol)] = DynamicAttrDef{
+				NameExpr:  attr.Expr,
+				ValueExpr: nested,
+			}
+			attrs = nested
+		}
+	}
+
+	attr := attrPath[len(attrPath)]
+	if attr.Expr == nil {
+		if existing, ok := attrs.AttrDefs[string(attr.Symbol)]; ok {
+			_ = existing
+			return dupAttrPath(attrPath, pos, existing.Pos)
+		} else {
+			attrs.AttrDefs[string(attr.Symbol)] = AttrDef{
+				Expr:      expr,
+				Inherited: false,
+			}
+		}
+	}
+
+	return nil
+}
+
+func addFormal(formals *Formals, formal Formal) error {
+	if _, ok := formals.ArgNames[string(formal.Name)]; ok {
+		return fmt.Errorf("duplicate formal function argument ‘%s’ at %s", "???", "???")
+	}
+
+	formals.ArgNames[string(formal.Name)] = struct{}{}
+	formals.Formals = append(formals.Formals, formal)
+	return nil
 }
 
 func (self parser) tok(offset int) Token {
@@ -74,7 +171,15 @@ func (self parser) parseExprFunction() (Expr, error) {
 				return nil, err
 			}
 
-			return ExprLambda{t1.Pos, t1.Text, false, []Formal{}, false, body}, nil
+			lambda := ExprLambda{
+				Pos:        t1.Pos,
+				Name:       t1.Text,
+				MatchAttrs: false,
+				Formals:    Formals{Formals: []Formal{}, ArgNames: map[string]struct{}{}},
+				Body:       body,
+			}
+
+			return lambda, nil
 		case AT:
 			_, err := self.mustMatch(LCURLY, 0)
 			if err != nil {
@@ -83,7 +188,7 @@ func (self parser) parseExprFunction() (Expr, error) {
 
 			self.advance(3)
 
-			formals, elipsis, err := self.parseFormals()
+			formals, err := self.parseFormals()
 			if err != nil {
 				return nil, err
 			}
@@ -105,7 +210,15 @@ func (self parser) parseExprFunction() (Expr, error) {
 				return nil, err
 			}
 
-			return ExprLambda{t1.Pos, t1.Text, true, formals, elipsis, body}, nil
+			lambda := ExprLambda{
+				Pos:        t1.Pos,
+				Name:       t1.Text,
+				MatchAttrs: true,
+				Formals:    formals,
+				Body:       body,
+			}
+
+			return lambda, nil
 		}
 	case ASSERT:
 		self.advance(1)
@@ -152,7 +265,7 @@ func (self parser) parseExprFunction() (Expr, error) {
 	case LET:
 		self.advance(1)
 
-		attrs, err := self.parseExpr()
+		binds, err := self.parseBinds()
 		if err != nil {
 			return nil, err
 		}
@@ -169,18 +282,20 @@ func (self parser) parseExprFunction() (Expr, error) {
 			return nil, err
 		}
 
-		return ExprLet{t1.Pos, attrs, body}, nil
+		return ExprLet{t1.Pos, binds, body}, nil
 	case LCURLY:
-		self.advance(1)
-
-		// TODO: fallback to attrs parsing here
-		formals, elipsis, err := self.parseFormals()
-		if err != nil {
-			//return nil, err
-			return self.parseExprIf()
+		if !self.isFunctionWithFormals() {
+			goto Fallthrough
 		}
 
-		_, err = self.mustMatch(RCURLY, 0)
+		self.advance(1)
+
+		formals, err := self.parseFormals()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = self.mustMatch('}', 0)
 
 		t2 := self.tok(1)
 		switch t2.TokenType {
@@ -190,7 +305,7 @@ func (self parser) parseExprFunction() (Expr, error) {
 				return nil, err
 			}
 
-			_, err = self.mustMatch(COLON, 3)
+			_, err = self.mustMatch(':', 3)
 			if err != nil {
 				return nil, err
 			}
@@ -202,7 +317,15 @@ func (self parser) parseExprFunction() (Expr, error) {
 				return nil, err
 			}
 
-			return ExprLambda{t1.Pos, nameTok.Text, true, formals, elipsis, body}, nil
+			lambda := ExprLambda{
+				Pos:        t1.Pos,
+				Name:       nameTok.Text,
+				MatchAttrs: true,
+				Formals:    formals,
+				Body:       body,
+			}
+
+			return lambda, nil
 		case COLON:
 			self.advance(2)
 
@@ -211,21 +334,58 @@ func (self parser) parseExprFunction() (Expr, error) {
 				return nil, err
 			}
 
-			return ExprLambda{t1.Pos, []byte{}, true, formals, elipsis, body}, nil
+			lambda := ExprLambda{
+				Pos:        t1.Pos,
+				Name:       []byte{},
+				MatchAttrs: true,
+				Formals:    formals,
+				Body:       body,
+			}
+
+			return lambda, nil
 		}
 	default:
-		return self.parseExprIf()
+		goto Fallthrough
 	}
 
-	panic("unreachable")
+Fallthrough:
+	return self.parseExprIf()
+}
+
+func (self parser) isTok(offset int, typ TokenType) bool {
+	return self.tok(offset).TokenType == typ
+}
+
+// Use this to disambiguate a function with formal arguments from an attr-set.
+//
+// The subsequent tokens are part of a function with formals when they are one
+// of the following sequences:
+//
+//     '{' ID '}' ':'
+//     '{' ID '}' '@'
+//     '{' ID ','
+//     '{' ID '?'
+//     '{' '}' ':'
+//     '{' '}' '@'
+//     '{' ELLIPSIS
+//
+// Otherwise, the tokens begin an attr-set.
+func (self parser) isFunctionWithFormals() bool {
+	if !self.isTok(0, '{') {
+		return false
+	}
+
+	return (self.isTok(1, ID) && self.isTok(2, '}') && self.isTok(3, ':')) ||
+		(self.isTok(1, ID) && self.isTok(2, '}') && self.isTok(3, '@')) ||
+		(self.isTok(1, ID) && self.isTok(2, ',')) ||
+		(self.isTok(1, ID) && self.isTok(2, '?')) ||
+		(self.isTok(1, '}') && self.isTok(2, ':')) ||
+		(self.isTok(1, '}') && self.isTok(2, '@')) ||
+		self.isTok(1, ELLIPSIS)
 }
 
 func undefined() Expr {
 	return nil
-}
-
-func (self parser) parseFormals() ([]Formal, bool, error) {
-	return []Formal{}, false, nil
 }
 
 func (self parser) parseExprIf() (Expr, error) {
@@ -651,54 +811,468 @@ func (self parser) parseExprSimple() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
+		self.advance(1)
 
 		binds.Recursive = true
-		return ExprSelect{Pos{}, binds, []byte("body"), nil}
+		attrPath := []AttrName{
+			AttrName{Symbol: []byte("body")},
+		}
+		return ExprSelect{Pos{}, binds, attrPath, nil}, nil
 	case REC:
-	case '{':
-	case '[':
-	}
-	return undefined(), nil
-}
+		self.advance(1)
+		_, err := self.mustMatch('{', 0)
+		if err != nil {
+			return nil, err
+		}
 
-func (self parser) parseAttrPath() ([]AttrName, error) {
-	return []AttrName{}, nil
+		binds, err := self.parseBinds()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = self.mustMatch('}', 0)
+		if err != nil {
+			return nil, err
+		}
+		self.advance(1)
+
+		binds.Recursive = true
+		return binds, nil
+	case '{':
+		self.advance(1)
+		binds, err := self.parseBinds()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = self.mustMatch('}', 0)
+		if err != nil {
+			return nil, err
+		}
+		self.advance(1)
+
+		return binds, err
+	case '[':
+		self.advance(1)
+		list, err := self.parseExprList()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = self.mustMatch(']', 0)
+		if err != nil {
+			return nil, err
+		}
+		self.advance(1)
+
+		return list, err
+	}
+
+	return nil, UnexpectedToken{}
 }
 
 func (self parser) parseStringParts() (Expr, error) {
-	return undefined(), nil
+	parts := []Expr{}
+
+	tok := self.tok(0)
+
+	// Exit early if this is just a simple string literal.
+	// We'll make use of the fact that we have an ExprString in this case
+	// elsewhere.
+	if t2 := self.tok(1); tok.TokenType == STR && t2.TokenType == '"' {
+		self.advance(1)
+		str := ExprString{[]byte(tok.Text)}
+		return str, nil
+	}
+
+	for {
+		if tok.TokenType == '"' {
+			break
+		}
+
+		switch tok.TokenType {
+		case STR:
+			self.advance(1)
+
+			str := ExprString{tok.Text}
+			parts = append(parts, str)
+		case DOLLAR_CURLY:
+			self.advance(1)
+
+			// TODO: inform parseExpr that a '}' is coming up
+			expr, err := self.parseExpr()
+			if err != nil {
+				return nil, err
+			}
+			parts = append(parts, expr)
+
+			_, err = self.mustMatch(RCURLY, 0)
+			if err != nil {
+				return nil, err
+			}
+			self.advance(1)
+		}
+
+		tok = self.tok(0)
+	}
+
+	concatExpr := ExprConcatStrings{Exprs: parts, ForceString: true}
+	return concatExpr, nil
 }
 
 func (self parser) parseBinds() (ExprAttrs, error) {
-	return undefined(), nil
+	binds := ExprAttrs{}
+
+	for {
+		tok := self.tok(0)
+
+		switch tok.TokenType {
+		case '}', IN:
+			break
+		}
+
+		switch tok.TokenType {
+		case INHERIT:
+			self.advance(1)
+			tok = self.tok(0)
+
+			switch tok.TokenType {
+			case '(':
+				self.advance(1)
+				tok = self.tok(0)
+
+				// TODO: inform parseExpr that a ')' is coming up
+				expr, err := self.parseExpr()
+				if err != nil {
+					return binds, err
+				}
+
+				_, err = self.mustMatch(')', 0)
+				if err != nil {
+					return binds, err
+				}
+				self.advance(1)
+
+				attrs, err := self.parseAttrs()
+				if err != nil {
+					return binds, err
+				}
+
+				_, err = self.mustMatch(';', 0)
+				if err != nil {
+					return binds, err
+				}
+				self.advance(1)
+
+				for _, attr := range attrs {
+					if _, ok := binds.AttrDefs[string(attr.Symbol)]; ok {
+						return binds, fmt.Errorf("attribute ‘%s’ at %s already defined at %s", attr.Symbol, "???", "???")
+					}
+
+					binds.AttrDefs[string(attr.Symbol)] = AttrDef{
+						Expr: ExprSelect{
+							Expr:     expr,
+							AttrPath: []AttrName{AttrName{Symbol: attr.Symbol}},
+						},
+						Inherited: false,
+					}
+				}
+			default:
+				attrs, err := self.parseAttrs()
+				if err != nil {
+					return binds, err
+				}
+
+				_, err = self.mustMatch(';', 0)
+				if err != nil {
+					return binds, err
+				}
+				self.advance(1)
+
+				for _, attr := range attrs {
+					if _, ok := binds.AttrDefs[string(attr.Symbol)]; ok {
+						return binds, fmt.Errorf("attribute ‘%s’ at %s already defined at %s", attr.Symbol, "???", "???")
+					}
+
+					binds.AttrDefs[string(attr.Symbol)] = AttrDef{
+						Expr: ExprVar{
+							Name: attr.Symbol,
+						},
+						Inherited: true,
+					}
+				}
+			}
+		default:
+			attrpath, err := self.parseAttrPath()
+			if err != nil {
+				return binds, err
+			}
+
+			_, err = self.mustMatch('=', 0)
+			if err != nil {
+				return binds, err
+			}
+			self.advance(1)
+
+			// TODO: inform parseExpr that a ';' is coming up
+			expr, err := self.parseExpr()
+			if err != nil {
+				return binds, err
+			}
+
+			_, err = self.mustMatch(';', 0)
+			if err != nil {
+				return binds, err
+			}
+			self.advance(1)
+
+			err = addAttr(binds, attrpath, expr, Pos{})
+			if err != nil {
+				return binds, err
+			}
+		}
+	}
+
+	return binds, nil
+}
+
+func (self parser) parseAttrs() ([]AttrName, error) {
+	attrs := []AttrName{}
+
+	for {
+		tok := self.tok(0)
+
+		switch tok.TokenType {
+		case ID, OR_KW:
+			attr, err := self.parseAttr()
+			if err != nil {
+				return nil, err
+			}
+
+			attrs = append(attrs, AttrName{Symbol: Symbol(attr)})
+		case '"', DOLLAR_CURLY:
+			strExpr, err := self.parseStringAttr()
+			if err != nil {
+				return nil, err
+			}
+
+			if str, ok := strExpr.(ExprString); ok {
+				attrs = append(attrs, AttrName{Symbol: Symbol(str.String)})
+			} else {
+				return nil, fmt.Errorf("dynamic attributes not allowed in inherit at %s", "???")
+			}
+		default:
+			break
+		}
+	}
+
+	return attrs, nil
+}
+
+func (self parser) parseAttrPath() ([]AttrName, error) {
+	attrs := []AttrName{}
+
+	for {
+		tok := self.tok(0)
+
+		switch tok.TokenType {
+		case ID, OR_KW:
+			attr, err := self.parseAttr()
+			if err != nil {
+				return nil, err
+			}
+
+			attrs = append(attrs, AttrName{Symbol: Symbol(attr)})
+		case '"', DOLLAR_CURLY:
+			strExpr, err := self.parseStringAttr()
+			if err != nil {
+				return nil, err
+			}
+
+			if str, ok := strExpr.(ExprString); ok {
+				attrs = append(attrs, AttrName{Symbol: Symbol(str.String)})
+			} else {
+				attrs = append(attrs, AttrName{Expr: strExpr})
+			}
+		}
+
+		tok = self.tok(0)
+		if tok.TokenType != '.' {
+			break
+		}
+		self.advance(1)
+	}
+
+	return attrs, nil
+}
+
+func (self parser) parseAttr() (string, error) {
+	tok := self.tok(0)
+	self.advance(1)
+	switch tok.TokenType {
+	case ID:
+		return string(tok.Text), nil
+	case OR_KW:
+		return "or", nil
+	default:
+		return "", UnexpectedToken{}
+	}
+}
+
+func (self parser) parseStringAttr() (Expr, error) {
+	tok := self.tok(0)
+	self.advance(1)
+	switch tok.TokenType {
+	case '"':
+		expr, err := self.parseStringParts()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = self.mustMatch('"', 0)
+		if err != nil {
+			return nil, err
+		}
+		self.advance(1)
+
+		return expr, err
+	case DOLLAR_CURLY:
+		expr, err := self.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = self.mustMatch('}', 0)
+		if err != nil {
+			return nil, err
+		}
+		self.advance(1)
+
+		return expr, err
+	default:
+		return nil, UnexpectedToken{}
+	}
+}
+
+func (self parser) parseExprList() (ExprList, error) {
+	elems := []Expr{}
+	tok := self.tok(0)
+
+	for {
+		if tok.TokenType == ']' {
+			break
+		}
+
+		elem, err := self.parseExprSelect()
+		if err != nil {
+			return ExprList{}, err
+		}
+
+		elems = append(elems, elem)
+
+		tok = self.tok(0)
+	}
+
+	return ExprList{Elems: elems}, nil
+}
+
+func (self parser) parseFormals() (Formals, error) {
+	formals := Formals{
+		ArgNames: map[string]struct{}{},
+		Formals:  []Formal{},
+		Ellipsis: false,
+	}
+
+	tok := self.tok(0)
+
+	for {
+		switch tok.TokenType {
+		case ELLIPSIS:
+			self.advance(1)
+			formals.Ellipsis = true
+			break
+		case ',':
+			self.advance(1)
+		case ID:
+			formal, err := self.parseFormal()
+			if err != nil {
+				return Formals{}, err
+			}
+
+			addFormal(&formals, formal)
+		}
+
+		tok = self.tok(0)
+	}
+
+	return formals, nil
+}
+
+func (self parser) parseFormal() (Formal, error) {
+	tokId, err := self.mustMatch('"', 0)
+	if err != nil {
+		return Formal{}, err
+	}
+	self.advance(1)
+
+	if self.tok(0).TokenType == '?' {
+		self.advance(1)
+		// TODO: inform parseExpr that a ',' or '} is coming up
+		expr, err := self.parseExpr()
+		if err != nil {
+			return Formal{}, err
+		}
+
+		return Formal{Name: tokId.Text, Def: expr}, nil
+	} else {
+		return Formal{Name: tokId.Text, Def: nil}, nil
+	}
 }
 
 type Symbol []byte
 
 type Expr interface{}
 
+type Formals struct {
+	Formals  []Formal
+	ArgNames map[string]struct{}
+	Ellipsis bool
+}
+
 type Formal struct {
 	Name Symbol
+	Def  Expr
+}
+
+type ExprConcatStrings struct {
+	ForceString bool
+	Exprs       []Expr
 }
 
 type ExprAttrs struct {
-	Recursive bool
-	AttrDefs  map[Symbol]AttrDef
+	Recursive       bool
+	AttrDefs        map[string]AttrDef
+	DynamicAttrDefs map[string]DynamicAttrDef
 }
 
 type AttrDef struct {
+	Pos       Pos
 	Inherited bool
 	Expr      Expr
-	//Pos Pos
 	//Displacement int
+}
+
+type DynamicAttrDef struct {
+	//Pos Pos
+	NameExpr  Expr
+	ValueExpr Expr
 }
 
 type ExprLambda struct {
 	Pos
 	Name       Symbol
 	MatchAttrs bool
-	Formals    []Formal
-	Elipsis    bool
+	Formals    Formals
 	Body       Expr
 }
 
@@ -716,7 +1290,7 @@ type ExprWith struct {
 
 type ExprLet struct {
 	Pos
-	Attrs Expr
+	Attrs ExprAttrs
 	Body  Expr
 }
 
@@ -866,6 +1440,14 @@ type ExprPath struct {
 
 type ExprString struct {
 	String []byte
+}
+
+type ExprList struct {
+	Elems []Expr
+}
+
+type ExprPos struct {
+	Pos Pos
 }
 
 //--------------------------------

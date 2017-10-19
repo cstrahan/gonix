@@ -95,7 +95,7 @@ func lex(data []byte) []Token {
     ( [^$'] | '$' [^{'] | "'" [^'$] )+
                   { EMIT_TEXT(IND_STR, ts, te, data[ts:te]) };
     "''$"         { EMIT_TEXT(IND_STR, ts, te, []byte("$")) };
-    "'''"         { EMIT_TEXT(IND_STR, ts, te, []byte("''")) };
+    "'''"         { EMIT_TEXT(IND_STR, ts, te, []byte("'")) };
     "''\\" any    { EMIT_TEXT(IND_STR, ts, te, unescapeStr(data[ts+2:te])) };
     "${"          { EMITS(DOLLAR_CURLY);
                     fcall inside_dollar_curly; };
@@ -133,7 +133,7 @@ func lex(data []byte) []Token {
     "//"          { EMITS(UPDATE) };
     "++"          { EMITS(CONCAT) };
 
-    ID            { EMITS(ID) };
+    ID            { EMIT_TEXT(ID, ts, te, data[ts:te]) };
     INT           { EMITS(INT) };
     FLOAT         { EMITS(FLOAT) };
 
@@ -193,7 +193,7 @@ func lex(data []byte) []Token {
     "//"          { EMITS(UPDATE) };
     "++"          { EMITS(CONCAT) };
 
-    ID            { EMITS(ID) };
+    ID            { EMIT_TEXT(ID, ts, te, data[ts:te]) };
     INT           { EMITS(INT) };
     FLOAT         { EMITS(FLOAT) };
 
