@@ -49,6 +49,8 @@ const (
 	COMMA  = 44
 	EQS    = 61
 	STAR   = 42
+	LPAREN = 40
+	RPAREN = 41
 
 	// Non-ASCII cont.
 	NEGATE           = 126

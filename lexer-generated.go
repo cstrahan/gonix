@@ -80,7 +80,7 @@ func lex(data []byte) []Token {
 	tokens := make([]Token, 0, 0)
 	_ = tokens
 
-//line lexer.rl:240
+//line lexer.rl:244
 
 //line lexer-generated.go.in:88
 	{
@@ -91,7 +91,7 @@ func lex(data []byte) []Token {
 		act = 0
 	}
 
-//line lexer.rl:243
+//line lexer.rl:247
 
 //line lexer-generated.go.in:99
 	{
@@ -744,14 +744,14 @@ func lex(data []byte) []Token {
 		}
 		goto st_out
 	tr3:
-//line lexer.rl:204
+//line lexer.rl:206
 		p = (te) - 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(FLOAT), Pos: Pos{ts, te}, Text: data[ts:te]})
 		}
 		goto st58
 	tr6:
-//line lexer.rl:206
+//line lexer.rl:208
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(DOLLAR_CURLY), Pos: Pos{ts, te}, Text: nil})
@@ -768,14 +768,14 @@ func lex(data []byte) []Token {
 		}
 		goto st58
 	tr7:
-//line lexer.rl:196
+//line lexer.rl:198
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(AND), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
 	tr9:
-//line lexer.rl:212
+//line lexer.rl:214
 		p = (te) - 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(IND_STRING_OPEN), Pos: Pos{ts, te}, Text: nil})
@@ -792,7 +792,7 @@ func lex(data []byte) []Token {
 		}
 		goto st58
 	tr10:
-//line lexer.rl:212
+//line lexer.rl:214
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(IND_STRING_OPEN), Pos: Pos{ts, te}, Text: nil})
@@ -817,102 +817,102 @@ func lex(data []byte) []Token {
 					goto st0
 				}
 			}
-		case 58:
+		case 60:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(IF), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 59:
+		case 61:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(THEN), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 60:
+		case 62:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(ELSE), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 61:
+		case 63:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(ASSERT), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 62:
+		case 64:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(WITH), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 63:
+		case 65:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(LET), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 64:
+		case 66:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(IN), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 65:
+		case 67:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(REC), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 66:
+		case 68:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(INHERIT), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 67:
+		case 69:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(OR_KW), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 68:
+		case 70:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(ELLIPSIS), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 72:
+		case 74:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(MINUS), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 73:
+		case 75:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(PLUS), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 84:
+		case 86:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(CONCAT), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 85:
+		case 87:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(ID), Pos: Pos{ts, te}, Text: data[ts:te]})
 			}
-		case 86:
+		case 88:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(INT), Pos: Pos{ts, te}, Text: data[ts:te]})
 			}
-		case 87:
+		case 89:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(FLOAT), Pos: Pos{ts, te}, Text: data[ts:te]})
 			}
-		case 92:
+		case 94:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 93:
+		case 95:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(HPATH), Pos: Pos{ts, te}, Text: nil})
 			}
-		case 99:
+		case 101:
 			{
 				p = (te) - 1
 				tokens = append(tokens, Token{TokenType: TokenType(DOT), Pos: Pos{ts, te}, Text: nil})
@@ -921,54 +921,54 @@ func lex(data []byte) []Token {
 
 		goto st58
 	tr16:
-//line lexer.rl:225
+//line lexer.rl:227
 		p = (te) - 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(DOT), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
 	tr21:
-//line lexer.rl:199
+//line lexer.rl:201
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(UPDATE), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
 	tr23:
-//line lexer.rl:223
+//line lexer.rl:225
 		te = p + 1
 
 		goto st58
 	tr25:
-//line lexer.rl:194
+//line lexer.rl:196
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(LEQ), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
 	tr27:
-//line lexer.rl:217
+//line lexer.rl:219
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(SPATH), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
 	tr28:
-//line lexer.rl:195
+//line lexer.rl:197
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(GEQ), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
 	tr32:
-//line lexer.rl:197
+//line lexer.rl:199
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(OR), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
 	tr83:
-//line lexer.rl:227
+//line lexer.rl:229
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(DQUOTE), Pos: Pos{ts, te}, Text: nil})
@@ -985,98 +985,112 @@ func lex(data []byte) []Token {
 		}
 		goto st58
 	tr88:
-//line lexer.rl:190
+//line lexer.rl:235
+		te = p + 1
+		{
+			tokens = append(tokens, Token{TokenType: TokenType(LPAREN), Pos: Pos{ts, te}, Text: nil})
+		}
+		goto st58
+	tr89:
+//line lexer.rl:236
+		te = p + 1
+		{
+			tokens = append(tokens, Token{TokenType: TokenType(RPAREN), Pos: Pos{ts, te}, Text: nil})
+		}
+		goto st58
+	tr90:
+//line lexer.rl:192
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(STAR), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr90:
-//line lexer.rl:232
+	tr92:
+//line lexer.rl:234
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(COMMA), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr96:
-//line lexer.rl:184
+	tr98:
+//line lexer.rl:186
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(COLON), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr97:
-//line lexer.rl:185
+	tr99:
+//line lexer.rl:187
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(SCOLON), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr101:
-//line lexer.rl:231
+	tr103:
+//line lexer.rl:233
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(QMARK), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr102:
-//line lexer.rl:186
+	tr104:
+//line lexer.rl:188
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(AT), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr113:
-//line lexer.rl:209
+	tr115:
+//line lexer.rl:211
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(LCURLY), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr115:
-//line lexer.rl:208
+	tr117:
+//line lexer.rl:210
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(RCURLY), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr117:
-//line lexer.rl:204
+	tr119:
+//line lexer.rl:206
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(FLOAT), Pos: Pos{ts, te}, Text: data[ts:te]})
 		}
 		goto st58
-	tr119:
-//line lexer.rl:220
+	tr121:
+//line lexer.rl:222
 		te = p
 		p--
 
 		goto st58
-	tr120:
-//line lexer.rl:189
+	tr122:
+//line lexer.rl:191
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(NOT), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr121:
-//line lexer.rl:193
+	tr123:
+//line lexer.rl:195
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(NEQ), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr122:
-//line lexer.rl:222
+	tr124:
+//line lexer.rl:224
 		te = p
 		p--
 
 		goto st58
-	tr123:
-//line lexer.rl:212
+	tr125:
+//line lexer.rl:214
 		te = p
 		p--
 		{
@@ -1093,94 +1107,94 @@ func lex(data []byte) []Token {
 			}
 		}
 		goto st58
-	tr124:
-//line lexer.rl:188
+	tr126:
+//line lexer.rl:190
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(PLUS), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr126:
-//line lexer.rl:215
+	tr128:
+//line lexer.rl:217
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr127:
-//line lexer.rl:187
+	tr129:
+//line lexer.rl:189
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(MINUS), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr128:
-//line lexer.rl:198
+	tr130:
+//line lexer.rl:200
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(IMPL), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr129:
-//line lexer.rl:225
+	tr131:
+//line lexer.rl:227
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(DOT), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr133:
-//line lexer.rl:203
+	tr135:
+//line lexer.rl:205
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(INT), Pos: Pos{ts, te}, Text: data[ts:te]})
 		}
 		goto st58
-	tr134:
-//line lexer.rl:230
+	tr136:
+//line lexer.rl:232
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(EQS), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr135:
-//line lexer.rl:192
+	tr137:
+//line lexer.rl:194
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(EQ), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr137:
-//line lexer.rl:202
+	tr139:
+//line lexer.rl:204
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(ID), Pos: Pos{ts, te}, Text: data[ts:te]})
 		}
 		goto st58
-	tr138:
-//line lexer.rl:218
+	tr140:
+//line lexer.rl:220
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(URI), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr149:
-//line lexer.rl:179
+	tr151:
+//line lexer.rl:181
 		te = p
 		p--
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(IN), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st58
-	tr166:
-//line lexer.rl:216
+	tr168:
+//line lexer.rl:218
 		te = p
 		p--
 		{
@@ -1201,7 +1215,7 @@ func lex(data []byte) []Token {
 //line NONE:1
 		ts = p
 
-//line lexer-generated.go.in:1066
+//line lexer-generated.go.in:1076
 		switch data[p] {
 		case 0:
 			goto st1
@@ -1221,24 +1235,28 @@ func lex(data []byte) []Token {
 			goto st6
 		case 39:
 			goto st7
-		case 42:
+		case 40:
 			goto tr88
-		case 43:
+		case 41:
 			goto tr89
-		case 44:
+		case 42:
 			goto tr90
-		case 45:
+		case 43:
 			goto tr91
-		case 46:
+		case 44:
 			goto tr92
+		case 45:
+			goto tr93
+		case 46:
+			goto tr94
 		case 47:
 			goto st14
 		case 48:
-			goto tr94
-		case 58:
 			goto tr96
+		case 58:
+			goto tr98
 		case 59:
-			goto tr97
+			goto tr99
 		case 60:
 			goto st17
 		case 61:
@@ -1246,33 +1264,33 @@ func lex(data []byte) []Token {
 		case 62:
 			goto st20
 		case 63:
-			goto tr101
+			goto tr103
 		case 64:
-			goto tr102
-		case 95:
 			goto tr104
-		case 97:
-			goto tr105
-		case 101:
+		case 95:
 			goto tr106
-		case 105:
+		case 97:
 			goto tr107
-		case 108:
+		case 101:
 			goto tr108
-		case 111:
+		case 105:
 			goto tr109
-		case 114:
+		case 108:
 			goto tr110
-		case 116:
+		case 111:
 			goto tr111
-		case 119:
+		case 114:
 			goto tr112
-		case 123:
+		case 116:
 			goto tr113
+		case 119:
+			goto tr114
+		case 123:
+			goto tr115
 		case 124:
 			goto st23
 		case 125:
-			goto tr115
+			goto tr117
 		case 126:
 			goto st24
 		}
@@ -1285,13 +1303,13 @@ func lex(data []byte) []Token {
 			switch {
 			case data[p] > 90:
 				if 98 <= data[p] && data[p] <= 122 {
-					goto tr103
+					goto tr105
 				}
 			case data[p] >= 65:
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr95
+			goto tr97
 		}
 		goto st0
 	st1:
@@ -1326,7 +1344,7 @@ func lex(data []byte) []Token {
 			goto _test_eof59
 		}
 	st_case_59:
-//line lexer-generated.go.in:1191
+//line lexer-generated.go.in:1205
 		switch data[p] {
 		case 69:
 			goto st3
@@ -1336,7 +1354,7 @@ func lex(data []byte) []Token {
 		if 48 <= data[p] && data[p] <= 57 {
 			goto tr2
 		}
-		goto tr117
+		goto tr119
 	st3:
 		if p++; p == pe {
 			goto _test_eof3
@@ -1369,7 +1387,7 @@ func lex(data []byte) []Token {
 		if 48 <= data[p] && data[p] <= 57 {
 			goto st60
 		}
-		goto tr117
+		goto tr119
 	st61:
 		if p++; p == pe {
 			goto _test_eof61
@@ -1384,16 +1402,16 @@ func lex(data []byte) []Token {
 		if 9 <= data[p] && data[p] <= 10 {
 			goto st61
 		}
-		goto tr119
+		goto tr121
 	st62:
 		if p++; p == pe {
 			goto _test_eof62
 		}
 	st_case_62:
 		if data[p] == 61 {
-			goto tr121
+			goto tr123
 		}
-		goto tr120
+		goto tr122
 	st63:
 		if p++; p == pe {
 			goto _test_eof63
@@ -1401,9 +1419,9 @@ func lex(data []byte) []Token {
 	st_case_63:
 		switch data[p] {
 		case 10:
-			goto tr122
+			goto tr124
 		case 13:
-			goto tr122
+			goto tr124
 		}
 		goto st63
 	st5:
@@ -1443,14 +1461,14 @@ func lex(data []byte) []Token {
 			goto _test_eof64
 		}
 	st_case_64:
-//line lexer-generated.go.in:1308
+//line lexer-generated.go.in:1322
 		switch data[p] {
 		case 10:
 			goto tr10
 		case 32:
 			goto st8
 		}
-		goto tr123
+		goto tr125
 	st8:
 		if p++; p == pe {
 			goto _test_eof8
@@ -1463,22 +1481,22 @@ func lex(data []byte) []Token {
 			goto st8
 		}
 		goto tr9
-	tr89:
+	tr91:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:188
-		act = 73
+//line lexer.rl:190
+		act = 75
 		goto st65
 	st65:
 		if p++; p == pe {
 			goto _test_eof65
 		}
 	st_case_65:
-//line lexer-generated.go.in:1340
+//line lexer-generated.go.in:1354
 		switch data[p] {
 		case 43:
-			goto tr125
+			goto tr127
 		case 47:
 			goto st10
 		case 95:
@@ -1496,27 +1514,27 @@ func lex(data []byte) []Token {
 		default:
 			goto st9
 		}
-		goto tr124
+		goto tr126
 	tr17:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:183
-		act = 68
+//line lexer.rl:185
+		act = 70
 		goto st66
-	tr125:
+	tr127:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:200
-		act = 84
+//line lexer.rl:202
+		act = 86
 		goto st66
 	st66:
 		if p++; p == pe {
 			goto _test_eof66
 		}
 	st_case_66:
-//line lexer-generated.go.in:1381
+//line lexer-generated.go.in:1395
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1597,15 +1615,15 @@ func lex(data []byte) []Token {
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:215
-		act = 92
+//line lexer.rl:217
+		act = 94
 		goto st67
 	st67:
 		if p++; p == pe {
 			goto _test_eof67
 		}
 	st_case_67:
-//line lexer-generated.go.in:1470
+//line lexer-generated.go.in:1484
 		switch data[p] {
 		case 43:
 			goto tr15
@@ -1626,27 +1644,27 @@ func lex(data []byte) []Token {
 		default:
 			goto tr15
 		}
-		goto tr126
-	tr91:
+		goto tr128
+	tr93:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:187
-		act = 72
+//line lexer.rl:189
+		act = 74
 		goto st68
 	st68:
 		if p++; p == pe {
 			goto _test_eof68
 		}
 	st_case_68:
-//line lexer-generated.go.in:1504
+//line lexer-generated.go.in:1518
 		switch data[p] {
 		case 43:
 			goto st9
 		case 47:
 			goto st10
 		case 62:
-			goto tr128
+			goto tr130
 		case 95:
 			goto st9
 		}
@@ -1662,20 +1680,20 @@ func lex(data []byte) []Token {
 		default:
 			goto st9
 		}
-		goto tr127
-	tr92:
+		goto tr129
+	tr94:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:225
-		act = 99
+//line lexer.rl:227
+		act = 101
 		goto st69
 	st69:
 		if p++; p == pe {
 			goto _test_eof69
 		}
 	st_case_69:
-//line lexer-generated.go.in:1540
+//line lexer-generated.go.in:1554
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1691,7 +1709,7 @@ func lex(data []byte) []Token {
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
-				goto tr131
+				goto tr133
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
@@ -1700,7 +1718,7 @@ func lex(data []byte) []Token {
 		default:
 			goto st9
 		}
-		goto tr129
+		goto tr131
 	st11:
 		if p++; p == pe {
 			goto _test_eof11
@@ -1729,19 +1747,19 @@ func lex(data []byte) []Token {
 			goto st9
 		}
 		goto tr16
-	tr131:
+	tr133:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:204
-		act = 87
+//line lexer.rl:206
+		act = 89
 		goto st70
 	st70:
 		if p++; p == pe {
 			goto _test_eof70
 		}
 	st_case_70:
-//line lexer-generated.go.in:1606
+//line lexer-generated.go.in:1620
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1769,9 +1787,9 @@ func lex(data []byte) []Token {
 				goto st9
 			}
 		default:
-			goto tr131
+			goto tr133
 		}
-		goto tr117
+		goto tr119
 	st12:
 		if p++; p == pe {
 			goto _test_eof12
@@ -1837,15 +1855,15 @@ func lex(data []byte) []Token {
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:204
-		act = 87
+//line lexer.rl:206
+		act = 89
 		goto st71
 	st71:
 		if p++; p == pe {
 			goto _test_eof71
 		}
 	st_case_71:
-//line lexer-generated.go.in:1710
+//line lexer-generated.go.in:1724
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1871,7 +1889,7 @@ func lex(data []byte) []Token {
 		default:
 			goto tr19
 		}
-		goto tr117
+		goto tr119
 	st14:
 		if p++; p == pe {
 			goto _test_eof14
@@ -1921,19 +1939,19 @@ func lex(data []byte) []Token {
 			goto tr23
 		}
 		goto st15
-	tr94:
+	tr96:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:203
-		act = 86
+//line lexer.rl:205
+		act = 88
 		goto st72
 	st72:
 		if p++; p == pe {
 			goto _test_eof72
 		}
 	st_case_72:
-//line lexer-generated.go.in:1798
+//line lexer-generated.go.in:1812
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1957,29 +1975,29 @@ func lex(data []byte) []Token {
 				goto st9
 			}
 		default:
-			goto tr94
+			goto tr96
 		}
-		goto tr133
-	tr95:
+		goto tr135
+	tr97:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:203
-		act = 86
+//line lexer.rl:205
+		act = 88
 		goto st73
 	st73:
 		if p++; p == pe {
 			goto _test_eof73
 		}
 	st_case_73:
-//line lexer-generated.go.in:1837
+//line lexer-generated.go.in:1851
 		switch data[p] {
 		case 43:
 			goto st9
 		case 45:
 			goto st9
 		case 46:
-			goto tr131
+			goto tr133
 		case 47:
 			goto st10
 		case 95:
@@ -1988,7 +2006,7 @@ func lex(data []byte) []Token {
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
-				goto tr95
+				goto tr97
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
@@ -1997,7 +2015,7 @@ func lex(data []byte) []Token {
 		default:
 			goto st9
 		}
-		goto tr133
+		goto tr135
 	st17:
 		if p++; p == pe {
 			goto _test_eof17
@@ -2092,9 +2110,9 @@ func lex(data []byte) []Token {
 		}
 	st_case_74:
 		if data[p] == 61 {
-			goto tr135
+			goto tr137
 		}
-		goto tr134
+		goto tr136
 	st20:
 		if p++; p == pe {
 			goto _test_eof20
@@ -2104,82 +2122,82 @@ func lex(data []byte) []Token {
 			goto tr28
 		}
 		goto st0
-	tr103:
+	tr105:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st75
-	tr143:
-//line NONE:1
-		te = p + 1
-
-//line lexer.rl:176
-		act = 61
-		goto st75
-	tr146:
-//line NONE:1
-		te = p + 1
-
-//line lexer.rl:175
-		act = 60
-		goto st75
-	tr147:
-//line NONE:1
-		te = p + 1
-
-//line lexer.rl:173
-		act = 58
-		goto st75
-	tr154:
-//line NONE:1
-		te = p + 1
-
-//line lexer.rl:181
-		act = 66
-		goto st75
-	tr156:
+	tr145:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:178
 		act = 63
 		goto st75
-	tr157:
-//line NONE:1
-		te = p + 1
-
-//line lexer.rl:182
-		act = 67
-		goto st75
-	tr159:
-//line NONE:1
-		te = p + 1
-
-//line lexer.rl:180
-		act = 65
-		goto st75
-	tr162:
-//line NONE:1
-		te = p + 1
-
-//line lexer.rl:174
-		act = 59
-		goto st75
-	tr165:
+	tr148:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:177
 		act = 62
 		goto st75
+	tr149:
+//line NONE:1
+		te = p + 1
+
+//line lexer.rl:175
+		act = 60
+		goto st75
+	tr156:
+//line NONE:1
+		te = p + 1
+
+//line lexer.rl:183
+		act = 68
+		goto st75
+	tr158:
+//line NONE:1
+		te = p + 1
+
+//line lexer.rl:180
+		act = 65
+		goto st75
+	tr159:
+//line NONE:1
+		te = p + 1
+
+//line lexer.rl:184
+		act = 69
+		goto st75
+	tr161:
+//line NONE:1
+		te = p + 1
+
+//line lexer.rl:182
+		act = 67
+		goto st75
+	tr164:
+//line NONE:1
+		te = p + 1
+
+//line lexer.rl:176
+		act = 61
+		goto st75
+	tr167:
+//line NONE:1
+		te = p + 1
+
+//line lexer.rl:179
+		act = 64
+		goto st75
 	st75:
 		if p++; p == pe {
 			goto _test_eof75
 		}
 	st_case_75:
-//line lexer-generated.go.in:2044
+//line lexer-generated.go.in:2058
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2192,19 +2210,19 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
 		goto tr12
 	st76:
@@ -2232,7 +2250,7 @@ func lex(data []byte) []Token {
 		default:
 			goto st76
 		}
-		goto tr137
+		goto tr139
 	st21:
 		if p++; p == pe {
 			goto _test_eof21
@@ -2326,20 +2344,20 @@ func lex(data []byte) []Token {
 		default:
 			goto st77
 		}
-		goto tr138
-	tr104:
+		goto tr140
+	tr106:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st78
 	st78:
 		if p++; p == pe {
 			goto _test_eof78
 		}
 	st_case_78:
-//line lexer-generated.go.in:2204
+//line lexer-generated.go.in:2218
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2350,34 +2368,34 @@ func lex(data []byte) []Token {
 		case 47:
 			goto st10
 		case 95:
-			goto tr104
+			goto tr106
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr104
+				goto tr106
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr104
+				goto tr106
 			}
 		default:
-			goto tr104
+			goto tr106
 		}
-		goto tr137
-	tr105:
+		goto tr139
+	tr107:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st79
 	st79:
 		if p++; p == pe {
 			goto _test_eof79
 		}
 	st_case_79:
-//line lexer-generated.go.in:2242
+//line lexer-generated.go.in:2256
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2390,36 +2408,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 115:
-			goto tr139
+			goto tr141
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr139:
+		goto tr139
+	tr141:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st80
 	st80:
 		if p++; p == pe {
 			goto _test_eof80
 		}
 	st_case_80:
-//line lexer-generated.go.in:2284
+//line lexer-generated.go.in:2298
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2432,36 +2450,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 115:
-			goto tr140
+			goto tr142
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr140:
+		goto tr139
+	tr142:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st81
 	st81:
 		if p++; p == pe {
 			goto _test_eof81
 		}
 	st_case_81:
-//line lexer-generated.go.in:2326
+//line lexer-generated.go.in:2340
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2474,36 +2492,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 101:
-			goto tr141
+			goto tr143
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr141:
+		goto tr139
+	tr143:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st82
 	st82:
 		if p++; p == pe {
 			goto _test_eof82
 		}
 	st_case_82:
-//line lexer-generated.go.in:2368
+//line lexer-generated.go.in:2382
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2516,36 +2534,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 114:
-			goto tr142
+			goto tr144
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr142:
+		goto tr139
+	tr144:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st83
 	st83:
 		if p++; p == pe {
 			goto _test_eof83
 		}
 	st_case_83:
-//line lexer-generated.go.in:2410
+//line lexer-generated.go.in:2424
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2558,36 +2576,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 116:
-			goto tr143
+			goto tr145
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr106:
+		goto tr139
+	tr108:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st84
 	st84:
 		if p++; p == pe {
 			goto _test_eof84
 		}
 	st_case_84:
-//line lexer-generated.go.in:2452
+//line lexer-generated.go.in:2466
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2600,36 +2618,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 108:
-			goto tr144
+			goto tr146
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr144:
+		goto tr139
+	tr146:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st85
 	st85:
 		if p++; p == pe {
 			goto _test_eof85
 		}
 	st_case_85:
-//line lexer-generated.go.in:2494
+//line lexer-generated.go.in:2508
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2642,36 +2660,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 115:
-			goto tr145
+			goto tr147
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr145:
+		goto tr139
+	tr147:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st86
 	st86:
 		if p++; p == pe {
 			goto _test_eof86
 		}
 	st_case_86:
-//line lexer-generated.go.in:2536
+//line lexer-generated.go.in:2550
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2684,36 +2702,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 101:
-			goto tr146
+			goto tr148
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr107:
+		goto tr139
+	tr109:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st87
 	st87:
 		if p++; p == pe {
 			goto _test_eof87
 		}
 	st_case_87:
-//line lexer-generated.go.in:2578
+//line lexer-generated.go.in:2592
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2726,38 +2744,38 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 102:
-			goto tr147
+			goto tr149
 		case 110:
-			goto tr148
+			goto tr150
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr148:
+		goto tr139
+	tr150:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:179
-		act = 64
+//line lexer.rl:181
+		act = 66
 		goto st88
 	st88:
 		if p++; p == pe {
 			goto _test_eof88
 		}
 	st_case_88:
-//line lexer-generated.go.in:2622
+//line lexer-generated.go.in:2636
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2770,36 +2788,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 104:
-			goto tr150
+			goto tr152
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr149
-	tr150:
+		goto tr151
+	tr152:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st89
 	st89:
 		if p++; p == pe {
 			goto _test_eof89
 		}
 	st_case_89:
-//line lexer-generated.go.in:2664
+//line lexer-generated.go.in:2678
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2812,36 +2830,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 101:
-			goto tr151
+			goto tr153
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr151:
+		goto tr139
+	tr153:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st90
 	st90:
 		if p++; p == pe {
 			goto _test_eof90
 		}
 	st_case_90:
-//line lexer-generated.go.in:2706
+//line lexer-generated.go.in:2720
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2854,36 +2872,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 114:
-			goto tr152
+			goto tr154
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr152:
+		goto tr139
+	tr154:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st91
 	st91:
 		if p++; p == pe {
 			goto _test_eof91
 		}
 	st_case_91:
-//line lexer-generated.go.in:2748
+//line lexer-generated.go.in:2762
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2896,36 +2914,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 105:
-			goto tr153
+			goto tr155
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr153:
+		goto tr139
+	tr155:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st92
 	st92:
 		if p++; p == pe {
 			goto _test_eof92
 		}
 	st_case_92:
-//line lexer-generated.go.in:2790
+//line lexer-generated.go.in:2804
 		switch data[p] {
 		case 39:
 			goto st76
@@ -2938,120 +2956,120 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
-		case 116:
-			goto tr154
-		}
-		switch {
-		case data[p] < 65:
-			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
-			}
-		case data[p] > 90:
-			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
-			}
-		default:
-			goto tr103
-		}
-		goto tr137
-	tr108:
-//line NONE:1
-		te = p + 1
-
-//line lexer.rl:202
-		act = 85
-		goto st93
-	st93:
-		if p++; p == pe {
-			goto _test_eof93
-		}
-	st_case_93:
-//line lexer-generated.go.in:2832
-		switch data[p] {
-		case 39:
-			goto st76
-		case 43:
-			goto st21
-		case 46:
-			goto st21
-		case 47:
-			goto st10
-		case 58:
-			goto st22
-		case 95:
-			goto tr104
-		case 101:
-			goto tr155
-		}
-		switch {
-		case data[p] < 65:
-			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
-			}
-		case data[p] > 90:
-			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
-			}
-		default:
-			goto tr103
-		}
-		goto tr137
-	tr155:
-//line NONE:1
-		te = p + 1
-
-//line lexer.rl:202
-		act = 85
-		goto st94
-	st94:
-		if p++; p == pe {
-			goto _test_eof94
-		}
-	st_case_94:
-//line lexer-generated.go.in:2874
-		switch data[p] {
-		case 39:
-			goto st76
-		case 43:
-			goto st21
-		case 46:
-			goto st21
-		case 47:
-			goto st10
-		case 58:
-			goto st22
-		case 95:
-			goto tr104
+			goto tr106
 		case 116:
 			goto tr156
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr109:
+		goto tr139
+	tr110:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
+		goto st93
+	st93:
+		if p++; p == pe {
+			goto _test_eof93
+		}
+	st_case_93:
+//line lexer-generated.go.in:2846
+		switch data[p] {
+		case 39:
+			goto st76
+		case 43:
+			goto st21
+		case 46:
+			goto st21
+		case 47:
+			goto st10
+		case 58:
+			goto st22
+		case 95:
+			goto tr106
+		case 101:
+			goto tr157
+		}
+		switch {
+		case data[p] < 65:
+			if 45 <= data[p] && data[p] <= 57 {
+				goto tr105
+			}
+		case data[p] > 90:
+			if 97 <= data[p] && data[p] <= 122 {
+				goto tr105
+			}
+		default:
+			goto tr105
+		}
+		goto tr139
+	tr157:
+//line NONE:1
+		te = p + 1
+
+//line lexer.rl:204
+		act = 87
+		goto st94
+	st94:
+		if p++; p == pe {
+			goto _test_eof94
+		}
+	st_case_94:
+//line lexer-generated.go.in:2888
+		switch data[p] {
+		case 39:
+			goto st76
+		case 43:
+			goto st21
+		case 46:
+			goto st21
+		case 47:
+			goto st10
+		case 58:
+			goto st22
+		case 95:
+			goto tr106
+		case 116:
+			goto tr158
+		}
+		switch {
+		case data[p] < 65:
+			if 45 <= data[p] && data[p] <= 57 {
+				goto tr105
+			}
+		case data[p] > 90:
+			if 97 <= data[p] && data[p] <= 122 {
+				goto tr105
+			}
+		default:
+			goto tr105
+		}
+		goto tr139
+	tr111:
+//line NONE:1
+		te = p + 1
+
+//line lexer.rl:204
+		act = 87
 		goto st95
 	st95:
 		if p++; p == pe {
 			goto _test_eof95
 		}
 	st_case_95:
-//line lexer-generated.go.in:2916
+//line lexer-generated.go.in:2930
 		switch data[p] {
 		case 39:
 			goto st76
@@ -3064,36 +3082,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 114:
-			goto tr157
+			goto tr159
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr110:
+		goto tr139
+	tr112:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st96
 	st96:
 		if p++; p == pe {
 			goto _test_eof96
 		}
 	st_case_96:
-//line lexer-generated.go.in:2958
+//line lexer-generated.go.in:2972
 		switch data[p] {
 		case 39:
 			goto st76
@@ -3106,36 +3124,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 101:
-			goto tr158
+			goto tr160
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr158:
+		goto tr139
+	tr160:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st97
 	st97:
 		if p++; p == pe {
 			goto _test_eof97
 		}
 	st_case_97:
-//line lexer-generated.go.in:3000
+//line lexer-generated.go.in:3014
 		switch data[p] {
 		case 39:
 			goto st76
@@ -3148,36 +3166,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 99:
-			goto tr159
+			goto tr161
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr111:
+		goto tr139
+	tr113:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st98
 	st98:
 		if p++; p == pe {
 			goto _test_eof98
 		}
 	st_case_98:
-//line lexer-generated.go.in:3042
+//line lexer-generated.go.in:3056
 		switch data[p] {
 		case 39:
 			goto st76
@@ -3190,36 +3208,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 104:
-			goto tr160
+			goto tr162
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr160:
+		goto tr139
+	tr162:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st99
 	st99:
 		if p++; p == pe {
 			goto _test_eof99
 		}
 	st_case_99:
-//line lexer-generated.go.in:3084
+//line lexer-generated.go.in:3098
 		switch data[p] {
 		case 39:
 			goto st76
@@ -3232,36 +3250,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 101:
-			goto tr161
+			goto tr163
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr161:
+		goto tr139
+	tr163:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st100
 	st100:
 		if p++; p == pe {
 			goto _test_eof100
 		}
 	st_case_100:
-//line lexer-generated.go.in:3126
+//line lexer-generated.go.in:3140
 		switch data[p] {
 		case 39:
 			goto st76
@@ -3274,36 +3292,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 110:
-			goto tr162
+			goto tr164
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr112:
+		goto tr139
+	tr114:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st101
 	st101:
 		if p++; p == pe {
 			goto _test_eof101
 		}
 	st_case_101:
-//line lexer-generated.go.in:3168
+//line lexer-generated.go.in:3182
 		switch data[p] {
 		case 39:
 			goto st76
@@ -3316,36 +3334,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 105:
-			goto tr163
+			goto tr165
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr163:
+		goto tr139
+	tr165:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st102
 	st102:
 		if p++; p == pe {
 			goto _test_eof102
 		}
 	st_case_102:
-//line lexer-generated.go.in:3210
+//line lexer-generated.go.in:3224
 		switch data[p] {
 		case 39:
 			goto st76
@@ -3358,36 +3376,36 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 116:
-			goto tr164
+			goto tr166
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
-	tr164:
+		goto tr139
+	tr166:
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:202
-		act = 85
+//line lexer.rl:204
+		act = 87
 		goto st103
 	st103:
 		if p++; p == pe {
 			goto _test_eof103
 		}
 	st_case_103:
-//line lexer-generated.go.in:3252
+//line lexer-generated.go.in:3266
 		switch data[p] {
 		case 39:
 			goto st76
@@ -3400,23 +3418,23 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st22
 		case 95:
-			goto tr104
+			goto tr106
 		case 104:
-			goto tr165
+			goto tr167
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr103
+				goto tr105
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr103
+				goto tr105
 			}
 		default:
-			goto tr103
+			goto tr105
 		}
-		goto tr137
+		goto tr139
 	st23:
 		if p++; p == pe {
 			goto _test_eof23
@@ -3468,15 +3486,15 @@ func lex(data []byte) []Token {
 //line NONE:1
 		te = p + 1
 
-//line lexer.rl:216
-		act = 93
+//line lexer.rl:218
+		act = 95
 		goto st104
 	st104:
 		if p++; p == pe {
 			goto _test_eof104
 		}
 	st_case_104:
-//line lexer-generated.go.in:3341
+//line lexer-generated.go.in:3355
 		switch data[p] {
 		case 43:
 			goto tr34
@@ -3497,7 +3515,7 @@ func lex(data []byte) []Token {
 		default:
 			goto tr34
 		}
-		goto tr166
+		goto tr168
 	tr35:
 //line lexer.rl:86
 		p = (te) - 1
@@ -3552,7 +3570,7 @@ func lex(data []byte) []Token {
 			}
 		}
 		goto st105
-	tr167:
+	tr169:
 //line lexer.rl:90
 		te = p + 1
 		{
@@ -3564,7 +3582,7 @@ func lex(data []byte) []Token {
 			}
 		}
 		goto st105
-	tr169:
+	tr171:
 //line lexer.rl:86
 		te = p
 		p--
@@ -3586,10 +3604,10 @@ func lex(data []byte) []Token {
 //line NONE:1
 		ts = p
 
-//line lexer-generated.go.in:3426
+//line lexer-generated.go.in:3440
 		switch data[p] {
 		case 34:
-			goto tr167
+			goto tr169
 		case 36:
 			goto st28
 		case 92:
@@ -3608,10 +3626,10 @@ func lex(data []byte) []Token {
 			goto _test_eof106
 		}
 	st_case_106:
-//line lexer-generated.go.in:3448
+//line lexer-generated.go.in:3462
 		switch data[p] {
 		case 34:
-			goto tr169
+			goto tr171
 		case 36:
 			goto st26
 		case 92:
@@ -3695,7 +3713,7 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(IND_STR), Pos: Pos{ts, te}, Text: unescapeStr(data[ts+2 : te])})
 		}
 		goto st107
-	tr173:
+	tr175:
 //line lexer.rl:96
 		te = p
 		p--
@@ -3703,7 +3721,7 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(IND_STR), Pos: Pos{ts, te}, Text: data[ts:te]})
 		}
 		goto st107
-	tr176:
+	tr178:
 //line lexer.rl:104
 		te = p
 		p--
@@ -3711,7 +3729,7 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(IND_STR), Pos: Pos{ts, te}, Text: []byte("'")})
 		}
 		goto st107
-	tr178:
+	tr180:
 //line lexer.rl:102
 		te = p
 		p--
@@ -3724,14 +3742,14 @@ func lex(data []byte) []Token {
 			}
 		}
 		goto st107
-	tr179:
+	tr181:
 //line lexer.rl:97
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(IND_STR), Pos: Pos{ts, te}, Text: []byte("$")})
 		}
 		goto st107
-	tr180:
+	tr182:
 //line lexer.rl:98
 		te = p + 1
 		{
@@ -3749,7 +3767,7 @@ func lex(data []byte) []Token {
 //line NONE:1
 		ts = p
 
-//line lexer-generated.go.in:3558
+//line lexer-generated.go.in:3572
 		switch data[p] {
 		case 36:
 			goto st31
@@ -3767,7 +3785,7 @@ func lex(data []byte) []Token {
 			goto _test_eof108
 		}
 	st_case_108:
-//line lexer-generated.go.in:3576
+//line lexer-generated.go.in:3590
 		switch data[p] {
 		case 36:
 			goto st29
@@ -3818,12 +3836,12 @@ func lex(data []byte) []Token {
 	st_case_109:
 		switch data[p] {
 		case 36:
-			goto tr176
+			goto tr178
 		case 39:
-			goto tr177
+			goto tr179
 		}
 		goto tr42
-	tr177:
+	tr179:
 //line NONE:1
 		te = p + 1
 
@@ -3833,16 +3851,16 @@ func lex(data []byte) []Token {
 			goto _test_eof110
 		}
 	st_case_110:
-//line lexer-generated.go.in:3642
+//line lexer-generated.go.in:3656
 		switch data[p] {
 		case 36:
-			goto tr179
+			goto tr181
 		case 39:
-			goto tr180
+			goto tr182
 		case 92:
 			goto st32
 		}
-		goto tr178
+		goto tr180
 	st32:
 		if p++; p == pe {
 			goto _test_eof32
@@ -4073,7 +4091,7 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(OR), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr185:
+	tr187:
 //line lexer.rl:164
 		te = p + 1
 		{
@@ -4090,49 +4108,63 @@ func lex(data []byte) []Token {
 			}
 		}
 		goto st111
-	tr190:
+	tr192:
+//line lexer.rl:170
+		te = p + 1
+		{
+			tokens = append(tokens, Token{TokenType: TokenType(LPAREN), Pos: Pos{ts, te}, Text: nil})
+		}
+		goto st111
+	tr193:
+//line lexer.rl:171
+		te = p + 1
+		{
+			tokens = append(tokens, Token{TokenType: TokenType(RPAREN), Pos: Pos{ts, te}, Text: nil})
+		}
+		goto st111
+	tr194:
 //line lexer.rl:125
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(STAR), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr192:
+	tr196:
 //line lexer.rl:169
 		te = p + 1
 		{
-			tokens = append(tokens, Token{TokenType: TokenType(','), Pos: Pos{ts, te}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(COMMA), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr198:
+	tr202:
 //line lexer.rl:119
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(COLON), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr199:
+	tr203:
 //line lexer.rl:120
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(SCOLON), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr203:
+	tr207:
 //line lexer.rl:168
 		te = p + 1
 		{
-			tokens = append(tokens, Token{TokenType: TokenType('?'), Pos: Pos{ts, te}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(QMARK), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr204:
+	tr208:
 //line lexer.rl:121
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(AT), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr215:
+	tr219:
 //line lexer.rl:145
 		te = p + 1
 		{
@@ -4149,7 +4181,7 @@ func lex(data []byte) []Token {
 			}
 		}
 		goto st111
-	tr217:
+	tr221:
 //line lexer.rl:143
 		te = p + 1
 		{
@@ -4161,7 +4193,7 @@ func lex(data []byte) []Token {
 			}
 		}
 		goto st111
-	tr219:
+	tr223:
 //line lexer.rl:139
 		te = p
 		p--
@@ -4169,13 +4201,13 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(FLOAT), Pos: Pos{ts, te}, Text: data[ts:te]})
 		}
 		goto st111
-	tr221:
+	tr225:
 //line lexer.rl:157
 		te = p
 		p--
 
 		goto st111
-	tr222:
+	tr226:
 //line lexer.rl:124
 		te = p
 		p--
@@ -4183,20 +4215,20 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(NOT), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr223:
+	tr227:
 //line lexer.rl:128
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(NEQ), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr224:
+	tr228:
 //line lexer.rl:159
 		te = p
 		p--
 
 		goto st111
-	tr225:
+	tr229:
 //line lexer.rl:149
 		te = p
 		p--
@@ -4214,7 +4246,7 @@ func lex(data []byte) []Token {
 			}
 		}
 		goto st111
-	tr226:
+	tr230:
 //line lexer.rl:123
 		te = p
 		p--
@@ -4222,7 +4254,7 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(PLUS), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr228:
+	tr232:
 //line lexer.rl:152
 		te = p
 		p--
@@ -4230,7 +4262,7 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr229:
+	tr233:
 //line lexer.rl:122
 		te = p
 		p--
@@ -4238,14 +4270,14 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(MINUS), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr230:
+	tr234:
 //line lexer.rl:133
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(IMPL), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr231:
+	tr235:
 //line lexer.rl:162
 		te = p
 		p--
@@ -4253,7 +4285,7 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(DOT), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr235:
+	tr239:
 //line lexer.rl:138
 		te = p
 		p--
@@ -4261,22 +4293,22 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(INT), Pos: Pos{ts, te}, Text: data[ts:te]})
 		}
 		goto st111
-	tr236:
+	tr240:
 //line lexer.rl:167
 		te = p
 		p--
 		{
-			tokens = append(tokens, Token{TokenType: TokenType('='), Pos: Pos{ts, te}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(EQS), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr237:
+	tr241:
 //line lexer.rl:127
 		te = p + 1
 		{
 			tokens = append(tokens, Token{TokenType: TokenType(EQ), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr239:
+	tr243:
 //line lexer.rl:137
 		te = p
 		p--
@@ -4284,7 +4316,7 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(ID), Pos: Pos{ts, te}, Text: data[ts:te]})
 		}
 		goto st111
-	tr240:
+	tr244:
 //line lexer.rl:155
 		te = p
 		p--
@@ -4292,7 +4324,7 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(URI), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr251:
+	tr255:
 //line lexer.rl:114
 		te = p
 		p--
@@ -4300,7 +4332,7 @@ func lex(data []byte) []Token {
 			tokens = append(tokens, Token{TokenType: TokenType(IN), Pos: Pos{ts, te}, Text: nil})
 		}
 		goto st111
-	tr268:
+	tr272:
 //line lexer.rl:153
 		te = p
 		p--
@@ -4322,7 +4354,7 @@ func lex(data []byte) []Token {
 //line NONE:1
 		ts = p
 
-//line lexer-generated.go.in:3981
+//line lexer-generated.go.in:4005
 		switch data[p] {
 		case 0:
 			goto st33
@@ -4333,7 +4365,7 @@ func lex(data []byte) []Token {
 		case 33:
 			goto st115
 		case 34:
-			goto tr185
+			goto tr187
 		case 35:
 			goto st116
 		case 36:
@@ -4342,24 +4374,28 @@ func lex(data []byte) []Token {
 			goto st38
 		case 39:
 			goto st39
-		case 42:
-			goto tr190
-		case 43:
-			goto tr191
-		case 44:
+		case 40:
 			goto tr192
-		case 45:
+		case 41:
 			goto tr193
-		case 46:
+		case 42:
 			goto tr194
+		case 43:
+			goto tr195
+		case 44:
+			goto tr196
+		case 45:
+			goto tr197
+		case 46:
+			goto tr198
 		case 47:
 			goto st46
 		case 48:
-			goto tr196
+			goto tr200
 		case 58:
-			goto tr198
+			goto tr202
 		case 59:
-			goto tr199
+			goto tr203
 		case 60:
 			goto st49
 		case 61:
@@ -4367,33 +4403,33 @@ func lex(data []byte) []Token {
 		case 62:
 			goto st52
 		case 63:
-			goto tr203
-		case 64:
-			goto tr204
-		case 95:
-			goto tr206
-		case 97:
 			goto tr207
-		case 101:
+		case 64:
 			goto tr208
-		case 105:
-			goto tr209
-		case 108:
+		case 95:
 			goto tr210
-		case 111:
+		case 97:
 			goto tr211
-		case 114:
+		case 101:
 			goto tr212
-		case 116:
+		case 105:
 			goto tr213
-		case 119:
+		case 108:
 			goto tr214
-		case 123:
+		case 111:
 			goto tr215
+		case 114:
+			goto tr216
+		case 116:
+			goto tr217
+		case 119:
+			goto tr218
+		case 123:
+			goto tr219
 		case 124:
 			goto st55
 		case 125:
-			goto tr217
+			goto tr221
 		case 126:
 			goto st56
 		}
@@ -4406,13 +4442,13 @@ func lex(data []byte) []Token {
 			switch {
 			case data[p] > 90:
 				if 98 <= data[p] && data[p] <= 122 {
-					goto tr205
+					goto tr209
 				}
 			case data[p] >= 65:
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr197
+			goto tr201
 		}
 		goto st0
 	st33:
@@ -4443,7 +4479,7 @@ func lex(data []byte) []Token {
 			goto _test_eof112
 		}
 	st_case_112:
-//line lexer-generated.go.in:4102
+//line lexer-generated.go.in:4130
 		switch data[p] {
 		case 69:
 			goto st35
@@ -4453,7 +4489,7 @@ func lex(data []byte) []Token {
 		if 48 <= data[p] && data[p] <= 57 {
 			goto tr47
 		}
-		goto tr219
+		goto tr223
 	st35:
 		if p++; p == pe {
 			goto _test_eof35
@@ -4486,7 +4522,7 @@ func lex(data []byte) []Token {
 		if 48 <= data[p] && data[p] <= 57 {
 			goto st113
 		}
-		goto tr219
+		goto tr223
 	st114:
 		if p++; p == pe {
 			goto _test_eof114
@@ -4501,16 +4537,16 @@ func lex(data []byte) []Token {
 		if 9 <= data[p] && data[p] <= 10 {
 			goto st114
 		}
-		goto tr221
+		goto tr225
 	st115:
 		if p++; p == pe {
 			goto _test_eof115
 		}
 	st_case_115:
 		if data[p] == 61 {
-			goto tr223
+			goto tr227
 		}
-		goto tr222
+		goto tr226
 	st116:
 		if p++; p == pe {
 			goto _test_eof116
@@ -4518,9 +4554,9 @@ func lex(data []byte) []Token {
 	st_case_116:
 		switch data[p] {
 		case 10:
-			goto tr224
+			goto tr228
 		case 13:
-			goto tr224
+			goto tr228
 		}
 		goto st116
 	st37:
@@ -4560,14 +4596,14 @@ func lex(data []byte) []Token {
 			goto _test_eof117
 		}
 	st_case_117:
-//line lexer-generated.go.in:4219
+//line lexer-generated.go.in:4247
 		switch data[p] {
 		case 10:
 			goto tr55
 		case 32:
 			goto st40
 		}
-		goto tr225
+		goto tr229
 	st40:
 		if p++; p == pe {
 			goto _test_eof40
@@ -4580,7 +4616,7 @@ func lex(data []byte) []Token {
 			goto st40
 		}
 		goto tr54
-	tr191:
+	tr195:
 //line NONE:1
 		te = p + 1
 
@@ -4592,10 +4628,10 @@ func lex(data []byte) []Token {
 			goto _test_eof118
 		}
 	st_case_118:
-//line lexer-generated.go.in:4251
+//line lexer-generated.go.in:4279
 		switch data[p] {
 		case 43:
-			goto tr227
+			goto tr231
 		case 47:
 			goto st42
 		case 95:
@@ -4613,7 +4649,7 @@ func lex(data []byte) []Token {
 		default:
 			goto st41
 		}
-		goto tr226
+		goto tr230
 	tr62:
 //line NONE:1
 		te = p + 1
@@ -4621,7 +4657,7 @@ func lex(data []byte) []Token {
 //line lexer.rl:118
 		act = 22
 		goto st119
-	tr227:
+	tr231:
 //line NONE:1
 		te = p + 1
 
@@ -4633,7 +4669,7 @@ func lex(data []byte) []Token {
 			goto _test_eof119
 		}
 	st_case_119:
-//line lexer-generated.go.in:4292
+//line lexer-generated.go.in:4320
 		switch data[p] {
 		case 43:
 			goto st41
@@ -4722,7 +4758,7 @@ func lex(data []byte) []Token {
 			goto _test_eof120
 		}
 	st_case_120:
-//line lexer-generated.go.in:4381
+//line lexer-generated.go.in:4409
 		switch data[p] {
 		case 43:
 			goto tr60
@@ -4743,8 +4779,8 @@ func lex(data []byte) []Token {
 		default:
 			goto tr60
 		}
-		goto tr228
-	tr193:
+		goto tr232
+	tr197:
 //line NONE:1
 		te = p + 1
 
@@ -4756,14 +4792,14 @@ func lex(data []byte) []Token {
 			goto _test_eof121
 		}
 	st_case_121:
-//line lexer-generated.go.in:4415
+//line lexer-generated.go.in:4443
 		switch data[p] {
 		case 43:
 			goto st41
 		case 47:
 			goto st42
 		case 62:
-			goto tr230
+			goto tr234
 		case 95:
 			goto st41
 		}
@@ -4779,8 +4815,8 @@ func lex(data []byte) []Token {
 		default:
 			goto st41
 		}
-		goto tr229
-	tr194:
+		goto tr233
+	tr198:
 //line NONE:1
 		te = p + 1
 
@@ -4792,7 +4828,7 @@ func lex(data []byte) []Token {
 			goto _test_eof122
 		}
 	st_case_122:
-//line lexer-generated.go.in:4451
+//line lexer-generated.go.in:4479
 		switch data[p] {
 		case 43:
 			goto st41
@@ -4808,7 +4844,7 @@ func lex(data []byte) []Token {
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
-				goto tr233
+				goto tr237
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
@@ -4817,7 +4853,7 @@ func lex(data []byte) []Token {
 		default:
 			goto st41
 		}
-		goto tr231
+		goto tr235
 	st43:
 		if p++; p == pe {
 			goto _test_eof43
@@ -4846,7 +4882,7 @@ func lex(data []byte) []Token {
 			goto st41
 		}
 		goto tr61
-	tr233:
+	tr237:
 //line NONE:1
 		te = p + 1
 
@@ -4858,7 +4894,7 @@ func lex(data []byte) []Token {
 			goto _test_eof123
 		}
 	st_case_123:
-//line lexer-generated.go.in:4517
+//line lexer-generated.go.in:4545
 		switch data[p] {
 		case 43:
 			goto st41
@@ -4886,9 +4922,9 @@ func lex(data []byte) []Token {
 				goto st41
 			}
 		default:
-			goto tr233
+			goto tr237
 		}
-		goto tr219
+		goto tr223
 	st44:
 		if p++; p == pe {
 			goto _test_eof44
@@ -4962,7 +4998,7 @@ func lex(data []byte) []Token {
 			goto _test_eof124
 		}
 	st_case_124:
-//line lexer-generated.go.in:4621
+//line lexer-generated.go.in:4649
 		switch data[p] {
 		case 43:
 			goto st41
@@ -4988,7 +5024,7 @@ func lex(data []byte) []Token {
 		default:
 			goto tr64
 		}
-		goto tr219
+		goto tr223
 	st46:
 		if p++; p == pe {
 			goto _test_eof46
@@ -5038,7 +5074,7 @@ func lex(data []byte) []Token {
 			goto tr68
 		}
 		goto st47
-	tr196:
+	tr200:
 //line NONE:1
 		te = p + 1
 
@@ -5050,7 +5086,7 @@ func lex(data []byte) []Token {
 			goto _test_eof125
 		}
 	st_case_125:
-//line lexer-generated.go.in:4709
+//line lexer-generated.go.in:4737
 		switch data[p] {
 		case 43:
 			goto st41
@@ -5074,10 +5110,10 @@ func lex(data []byte) []Token {
 				goto st41
 			}
 		default:
-			goto tr196
+			goto tr200
 		}
-		goto tr235
-	tr197:
+		goto tr239
+	tr201:
 //line NONE:1
 		te = p + 1
 
@@ -5089,14 +5125,14 @@ func lex(data []byte) []Token {
 			goto _test_eof126
 		}
 	st_case_126:
-//line lexer-generated.go.in:4748
+//line lexer-generated.go.in:4776
 		switch data[p] {
 		case 43:
 			goto st41
 		case 45:
 			goto st41
 		case 46:
-			goto tr233
+			goto tr237
 		case 47:
 			goto st42
 		case 95:
@@ -5105,7 +5141,7 @@ func lex(data []byte) []Token {
 		switch {
 		case data[p] < 65:
 			if 48 <= data[p] && data[p] <= 57 {
-				goto tr197
+				goto tr201
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
@@ -5114,7 +5150,7 @@ func lex(data []byte) []Token {
 		default:
 			goto st41
 		}
-		goto tr235
+		goto tr239
 	st49:
 		if p++; p == pe {
 			goto _test_eof49
@@ -5209,9 +5245,9 @@ func lex(data []byte) []Token {
 		}
 	st_case_127:
 		if data[p] == 61 {
-			goto tr237
+			goto tr241
 		}
-		goto tr236
+		goto tr240
 	st52:
 		if p++; p == pe {
 			goto _test_eof52
@@ -5221,70 +5257,70 @@ func lex(data []byte) []Token {
 			goto tr73
 		}
 		goto st0
-	tr205:
+	tr209:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:137
 		act = 39
 		goto st128
-	tr245:
+	tr249:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:111
 		act = 15
 		goto st128
-	tr248:
+	tr252:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:110
 		act = 14
 		goto st128
-	tr249:
+	tr253:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:108
 		act = 12
 		goto st128
-	tr256:
+	tr260:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:116
 		act = 20
 		goto st128
-	tr258:
+	tr262:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:113
 		act = 17
 		goto st128
-	tr259:
+	tr263:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:117
 		act = 21
 		goto st128
-	tr261:
+	tr265:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:115
 		act = 19
 		goto st128
-	tr264:
+	tr268:
 //line NONE:1
 		te = p + 1
 
 //line lexer.rl:109
 		act = 13
 		goto st128
-	tr267:
+	tr271:
 //line NONE:1
 		te = p + 1
 
@@ -5296,7 +5332,7 @@ func lex(data []byte) []Token {
 			goto _test_eof128
 		}
 	st_case_128:
-//line lexer-generated.go.in:4955
+//line lexer-generated.go.in:4983
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5309,19 +5345,19 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
 		goto tr57
 	st129:
@@ -5349,7 +5385,7 @@ func lex(data []byte) []Token {
 		default:
 			goto st129
 		}
-		goto tr239
+		goto tr243
 	st53:
 		if p++; p == pe {
 			goto _test_eof53
@@ -5443,8 +5479,8 @@ func lex(data []byte) []Token {
 		default:
 			goto st130
 		}
-		goto tr240
-	tr206:
+		goto tr244
+	tr210:
 //line NONE:1
 		te = p + 1
 
@@ -5456,7 +5492,7 @@ func lex(data []byte) []Token {
 			goto _test_eof131
 		}
 	st_case_131:
-//line lexer-generated.go.in:5115
+//line lexer-generated.go.in:5143
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5467,22 +5503,22 @@ func lex(data []byte) []Token {
 		case 47:
 			goto st42
 		case 95:
-			goto tr206
+			goto tr210
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr206
+				goto tr210
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr206
+				goto tr210
 			}
 		default:
-			goto tr206
+			goto tr210
 		}
-		goto tr239
-	tr207:
+		goto tr243
+	tr211:
 //line NONE:1
 		te = p + 1
 
@@ -5494,7 +5530,7 @@ func lex(data []byte) []Token {
 			goto _test_eof132
 		}
 	st_case_132:
-//line lexer-generated.go.in:5153
+//line lexer-generated.go.in:5181
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5507,24 +5543,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 115:
-			goto tr241
+			goto tr245
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr241:
+		goto tr243
+	tr245:
 //line NONE:1
 		te = p + 1
 
@@ -5536,7 +5572,7 @@ func lex(data []byte) []Token {
 			goto _test_eof133
 		}
 	st_case_133:
-//line lexer-generated.go.in:5195
+//line lexer-generated.go.in:5223
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5549,24 +5585,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 115:
-			goto tr242
+			goto tr246
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr242:
+		goto tr243
+	tr246:
 //line NONE:1
 		te = p + 1
 
@@ -5578,7 +5614,7 @@ func lex(data []byte) []Token {
 			goto _test_eof134
 		}
 	st_case_134:
-//line lexer-generated.go.in:5237
+//line lexer-generated.go.in:5265
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5591,24 +5627,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 101:
-			goto tr243
+			goto tr247
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr243:
+		goto tr243
+	tr247:
 //line NONE:1
 		te = p + 1
 
@@ -5620,7 +5656,7 @@ func lex(data []byte) []Token {
 			goto _test_eof135
 		}
 	st_case_135:
-//line lexer-generated.go.in:5279
+//line lexer-generated.go.in:5307
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5633,24 +5669,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 114:
-			goto tr244
+			goto tr248
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr244:
+		goto tr243
+	tr248:
 //line NONE:1
 		te = p + 1
 
@@ -5662,7 +5698,7 @@ func lex(data []byte) []Token {
 			goto _test_eof136
 		}
 	st_case_136:
-//line lexer-generated.go.in:5321
+//line lexer-generated.go.in:5349
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5675,24 +5711,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 116:
-			goto tr245
+			goto tr249
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr208:
+		goto tr243
+	tr212:
 //line NONE:1
 		te = p + 1
 
@@ -5704,7 +5740,7 @@ func lex(data []byte) []Token {
 			goto _test_eof137
 		}
 	st_case_137:
-//line lexer-generated.go.in:5363
+//line lexer-generated.go.in:5391
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5717,24 +5753,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 108:
-			goto tr246
+			goto tr250
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr246:
+		goto tr243
+	tr250:
 //line NONE:1
 		te = p + 1
 
@@ -5746,7 +5782,7 @@ func lex(data []byte) []Token {
 			goto _test_eof138
 		}
 	st_case_138:
-//line lexer-generated.go.in:5405
+//line lexer-generated.go.in:5433
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5759,24 +5795,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 115:
-			goto tr247
+			goto tr251
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr247:
+		goto tr243
+	tr251:
 //line NONE:1
 		te = p + 1
 
@@ -5788,7 +5824,7 @@ func lex(data []byte) []Token {
 			goto _test_eof139
 		}
 	st_case_139:
-//line lexer-generated.go.in:5447
+//line lexer-generated.go.in:5475
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5801,24 +5837,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 101:
-			goto tr248
+			goto tr252
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr209:
+		goto tr243
+	tr213:
 //line NONE:1
 		te = p + 1
 
@@ -5830,7 +5866,7 @@ func lex(data []byte) []Token {
 			goto _test_eof140
 		}
 	st_case_140:
-//line lexer-generated.go.in:5489
+//line lexer-generated.go.in:5517
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5843,26 +5879,26 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 102:
-			goto tr249
+			goto tr253
 		case 110:
-			goto tr250
+			goto tr254
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr250:
+		goto tr243
+	tr254:
 //line NONE:1
 		te = p + 1
 
@@ -5874,7 +5910,7 @@ func lex(data []byte) []Token {
 			goto _test_eof141
 		}
 	st_case_141:
-//line lexer-generated.go.in:5533
+//line lexer-generated.go.in:5561
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5887,24 +5923,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 104:
-			goto tr252
+			goto tr256
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr251
-	tr252:
+		goto tr255
+	tr256:
 //line NONE:1
 		te = p + 1
 
@@ -5916,7 +5952,7 @@ func lex(data []byte) []Token {
 			goto _test_eof142
 		}
 	st_case_142:
-//line lexer-generated.go.in:5575
+//line lexer-generated.go.in:5603
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5929,24 +5965,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 101:
-			goto tr253
+			goto tr257
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr253:
+		goto tr243
+	tr257:
 //line NONE:1
 		te = p + 1
 
@@ -5958,7 +5994,7 @@ func lex(data []byte) []Token {
 			goto _test_eof143
 		}
 	st_case_143:
-//line lexer-generated.go.in:5617
+//line lexer-generated.go.in:5645
 		switch data[p] {
 		case 39:
 			goto st129
@@ -5971,24 +6007,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 114:
-			goto tr254
+			goto tr258
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr254:
+		goto tr243
+	tr258:
 //line NONE:1
 		te = p + 1
 
@@ -6000,7 +6036,7 @@ func lex(data []byte) []Token {
 			goto _test_eof144
 		}
 	st_case_144:
-//line lexer-generated.go.in:5659
+//line lexer-generated.go.in:5687
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6013,24 +6049,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 105:
-			goto tr255
+			goto tr259
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr255:
+		goto tr243
+	tr259:
 //line NONE:1
 		te = p + 1
 
@@ -6042,7 +6078,7 @@ func lex(data []byte) []Token {
 			goto _test_eof145
 		}
 	st_case_145:
-//line lexer-generated.go.in:5701
+//line lexer-generated.go.in:5729
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6055,24 +6091,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 116:
-			goto tr256
+			goto tr260
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr210:
+		goto tr243
+	tr214:
 //line NONE:1
 		te = p + 1
 
@@ -6084,7 +6120,7 @@ func lex(data []byte) []Token {
 			goto _test_eof146
 		}
 	st_case_146:
-//line lexer-generated.go.in:5743
+//line lexer-generated.go.in:5771
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6097,24 +6133,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 101:
-			goto tr257
+			goto tr261
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr257:
+		goto tr243
+	tr261:
 //line NONE:1
 		te = p + 1
 
@@ -6126,7 +6162,7 @@ func lex(data []byte) []Token {
 			goto _test_eof147
 		}
 	st_case_147:
-//line lexer-generated.go.in:5785
+//line lexer-generated.go.in:5813
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6139,24 +6175,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 116:
-			goto tr258
+			goto tr262
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr211:
+		goto tr243
+	tr215:
 //line NONE:1
 		te = p + 1
 
@@ -6168,7 +6204,7 @@ func lex(data []byte) []Token {
 			goto _test_eof148
 		}
 	st_case_148:
-//line lexer-generated.go.in:5827
+//line lexer-generated.go.in:5855
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6181,24 +6217,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 114:
-			goto tr259
+			goto tr263
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr212:
+		goto tr243
+	tr216:
 //line NONE:1
 		te = p + 1
 
@@ -6210,7 +6246,7 @@ func lex(data []byte) []Token {
 			goto _test_eof149
 		}
 	st_case_149:
-//line lexer-generated.go.in:5869
+//line lexer-generated.go.in:5897
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6223,24 +6259,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 101:
-			goto tr260
+			goto tr264
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr260:
+		goto tr243
+	tr264:
 //line NONE:1
 		te = p + 1
 
@@ -6252,7 +6288,7 @@ func lex(data []byte) []Token {
 			goto _test_eof150
 		}
 	st_case_150:
-//line lexer-generated.go.in:5911
+//line lexer-generated.go.in:5939
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6265,24 +6301,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 99:
-			goto tr261
+			goto tr265
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr213:
+		goto tr243
+	tr217:
 //line NONE:1
 		te = p + 1
 
@@ -6294,7 +6330,7 @@ func lex(data []byte) []Token {
 			goto _test_eof151
 		}
 	st_case_151:
-//line lexer-generated.go.in:5953
+//line lexer-generated.go.in:5981
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6307,24 +6343,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 104:
-			goto tr262
+			goto tr266
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr262:
+		goto tr243
+	tr266:
 //line NONE:1
 		te = p + 1
 
@@ -6336,7 +6372,7 @@ func lex(data []byte) []Token {
 			goto _test_eof152
 		}
 	st_case_152:
-//line lexer-generated.go.in:5995
+//line lexer-generated.go.in:6023
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6349,24 +6385,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 101:
-			goto tr263
+			goto tr267
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr263:
+		goto tr243
+	tr267:
 //line NONE:1
 		te = p + 1
 
@@ -6378,7 +6414,7 @@ func lex(data []byte) []Token {
 			goto _test_eof153
 		}
 	st_case_153:
-//line lexer-generated.go.in:6037
+//line lexer-generated.go.in:6065
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6391,24 +6427,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 110:
-			goto tr264
+			goto tr268
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr214:
+		goto tr243
+	tr218:
 //line NONE:1
 		te = p + 1
 
@@ -6420,7 +6456,7 @@ func lex(data []byte) []Token {
 			goto _test_eof154
 		}
 	st_case_154:
-//line lexer-generated.go.in:6079
+//line lexer-generated.go.in:6107
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6433,24 +6469,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 105:
-			goto tr265
+			goto tr269
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr265:
+		goto tr243
+	tr269:
 //line NONE:1
 		te = p + 1
 
@@ -6462,7 +6498,7 @@ func lex(data []byte) []Token {
 			goto _test_eof155
 		}
 	st_case_155:
-//line lexer-generated.go.in:6121
+//line lexer-generated.go.in:6149
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6475,24 +6511,24 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 116:
-			goto tr266
+			goto tr270
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
-	tr266:
+		goto tr243
+	tr270:
 //line NONE:1
 		te = p + 1
 
@@ -6504,7 +6540,7 @@ func lex(data []byte) []Token {
 			goto _test_eof156
 		}
 	st_case_156:
-//line lexer-generated.go.in:6163
+//line lexer-generated.go.in:6191
 		switch data[p] {
 		case 39:
 			goto st129
@@ -6517,23 +6553,23 @@ func lex(data []byte) []Token {
 		case 58:
 			goto st54
 		case 95:
-			goto tr206
+			goto tr210
 		case 104:
-			goto tr267
+			goto tr271
 		}
 		switch {
 		case data[p] < 65:
 			if 45 <= data[p] && data[p] <= 57 {
-				goto tr205
+				goto tr209
 			}
 		case data[p] > 90:
 			if 97 <= data[p] && data[p] <= 122 {
-				goto tr205
+				goto tr209
 			}
 		default:
-			goto tr205
+			goto tr209
 		}
-		goto tr239
+		goto tr243
 	st55:
 		if p++; p == pe {
 			goto _test_eof55
@@ -6593,7 +6629,7 @@ func lex(data []byte) []Token {
 			goto _test_eof157
 		}
 	st_case_157:
-//line lexer-generated.go.in:6252
+//line lexer-generated.go.in:6280
 		switch data[p] {
 		case 43:
 			goto tr79
@@ -6614,7 +6650,7 @@ func lex(data []byte) []Token {
 		default:
 			goto tr79
 		}
-		goto tr268
+		goto tr272
 	st_out:
 	_test_eof58:
 		cs = 58
@@ -7094,25 +7130,25 @@ func lex(data []byte) []Token {
 		if p == eof {
 			switch cs {
 			case 59:
-				goto tr117
+				goto tr119
 			case 3:
 				goto tr3
 			case 4:
 				goto tr3
 			case 60:
-				goto tr117
-			case 61:
 				goto tr119
+			case 61:
+				goto tr121
 			case 62:
-				goto tr120
-			case 63:
 				goto tr122
+			case 63:
+				goto tr124
 			case 64:
-				goto tr123
+				goto tr125
 			case 8:
 				goto tr9
 			case 65:
-				goto tr124
+				goto tr126
 			case 66:
 				goto tr12
 			case 9:
@@ -7120,131 +7156,131 @@ func lex(data []byte) []Token {
 			case 10:
 				goto tr12
 			case 67:
-				goto tr126
+				goto tr128
 			case 68:
-				goto tr127
-			case 69:
 				goto tr129
+			case 69:
+				goto tr131
 			case 11:
 				goto tr16
 			case 70:
-				goto tr117
+				goto tr119
 			case 12:
 				goto tr3
 			case 13:
 				goto tr3
 			case 71:
-				goto tr117
+				goto tr119
 			case 72:
-				goto tr133
+				goto tr135
 			case 73:
-				goto tr133
+				goto tr135
 			case 74:
-				goto tr134
+				goto tr136
 			case 75:
 				goto tr12
 			case 76:
-				goto tr137
+				goto tr139
 			case 21:
 				goto tr12
 			case 22:
 				goto tr12
 			case 77:
-				goto tr138
+				goto tr140
 			case 78:
-				goto tr137
+				goto tr139
 			case 79:
-				goto tr137
+				goto tr139
 			case 80:
-				goto tr137
+				goto tr139
 			case 81:
-				goto tr137
+				goto tr139
 			case 82:
-				goto tr137
+				goto tr139
 			case 83:
-				goto tr137
+				goto tr139
 			case 84:
-				goto tr137
+				goto tr139
 			case 85:
-				goto tr137
+				goto tr139
 			case 86:
-				goto tr137
+				goto tr139
 			case 87:
-				goto tr137
+				goto tr139
 			case 88:
-				goto tr149
+				goto tr151
 			case 89:
-				goto tr137
+				goto tr139
 			case 90:
-				goto tr137
+				goto tr139
 			case 91:
-				goto tr137
+				goto tr139
 			case 92:
-				goto tr137
+				goto tr139
 			case 93:
-				goto tr137
+				goto tr139
 			case 94:
-				goto tr137
+				goto tr139
 			case 95:
-				goto tr137
+				goto tr139
 			case 96:
-				goto tr137
+				goto tr139
 			case 97:
-				goto tr137
+				goto tr139
 			case 98:
-				goto tr137
+				goto tr139
 			case 99:
-				goto tr137
+				goto tr139
 			case 100:
-				goto tr137
+				goto tr139
 			case 101:
-				goto tr137
+				goto tr139
 			case 102:
-				goto tr137
+				goto tr139
 			case 103:
-				goto tr137
+				goto tr139
 			case 25:
 				goto tr12
 			case 104:
-				goto tr166
+				goto tr168
 			case 106:
-				goto tr169
+				goto tr171
 			case 26:
 				goto tr35
 			case 27:
 				goto tr39
 			case 108:
-				goto tr173
+				goto tr175
 			case 29:
 				goto tr41
 			case 30:
 				goto tr41
 			case 109:
-				goto tr176
-			case 110:
 				goto tr178
+			case 110:
+				goto tr180
 			case 32:
 				goto tr44
 			case 112:
-				goto tr219
+				goto tr223
 			case 35:
 				goto tr48
 			case 36:
 				goto tr48
 			case 113:
-				goto tr219
+				goto tr223
 			case 114:
-				goto tr221
-			case 115:
-				goto tr222
-			case 116:
-				goto tr224
-			case 117:
 				goto tr225
+			case 115:
+				goto tr226
+			case 116:
+				goto tr228
+			case 117:
+				goto tr229
 			case 40:
 				goto tr54
 			case 118:
-				goto tr226
+				goto tr230
 			case 119:
 				goto tr57
 			case 41:
@@ -7252,93 +7288,93 @@ func lex(data []byte) []Token {
 			case 42:
 				goto tr57
 			case 120:
-				goto tr228
+				goto tr232
 			case 121:
-				goto tr229
+				goto tr233
 			case 122:
-				goto tr231
+				goto tr235
 			case 43:
 				goto tr61
 			case 123:
-				goto tr219
+				goto tr223
 			case 44:
 				goto tr48
 			case 45:
 				goto tr48
 			case 124:
-				goto tr219
+				goto tr223
 			case 125:
-				goto tr235
+				goto tr239
 			case 126:
-				goto tr235
+				goto tr239
 			case 127:
-				goto tr236
+				goto tr240
 			case 128:
 				goto tr57
 			case 129:
-				goto tr239
+				goto tr243
 			case 53:
 				goto tr57
 			case 54:
 				goto tr57
 			case 130:
-				goto tr240
+				goto tr244
 			case 131:
-				goto tr239
+				goto tr243
 			case 132:
-				goto tr239
+				goto tr243
 			case 133:
-				goto tr239
+				goto tr243
 			case 134:
-				goto tr239
+				goto tr243
 			case 135:
-				goto tr239
+				goto tr243
 			case 136:
-				goto tr239
+				goto tr243
 			case 137:
-				goto tr239
+				goto tr243
 			case 138:
-				goto tr239
+				goto tr243
 			case 139:
-				goto tr239
+				goto tr243
 			case 140:
-				goto tr239
+				goto tr243
 			case 141:
-				goto tr251
+				goto tr255
 			case 142:
-				goto tr239
+				goto tr243
 			case 143:
-				goto tr239
+				goto tr243
 			case 144:
-				goto tr239
+				goto tr243
 			case 145:
-				goto tr239
+				goto tr243
 			case 146:
-				goto tr239
+				goto tr243
 			case 147:
-				goto tr239
+				goto tr243
 			case 148:
-				goto tr239
+				goto tr243
 			case 149:
-				goto tr239
+				goto tr243
 			case 150:
-				goto tr239
+				goto tr243
 			case 151:
-				goto tr239
+				goto tr243
 			case 152:
-				goto tr239
+				goto tr243
 			case 153:
-				goto tr239
+				goto tr243
 			case 154:
-				goto tr239
+				goto tr243
 			case 155:
-				goto tr239
+				goto tr243
 			case 156:
-				goto tr239
+				goto tr243
 			case 57:
 				goto tr57
 			case 157:
-				goto tr268
+				goto tr272
 			}
 		}
 
@@ -7347,6 +7383,6 @@ func lex(data []byte) []Token {
 		}
 	}
 
-//line lexer.rl:244
+//line lexer.rl:248
 	return tokens
 }

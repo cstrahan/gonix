@@ -164,9 +164,11 @@ func lex(data []byte) []Token {
     '"'           { EMITS(DQUOTE);
                     fcall string; };
 
-    "="           { EMITS('=') };
-    "?"           { EMITS('?') };
-    ","           { EMITS(',') };
+    "="           { EMITS(EQS) };
+    "?"           { EMITS(QMARK) };
+    ","           { EMITS(COMMA) };
+    "("           { EMITS(LPAREN) };
+    ")"           { EMITS(RPAREN) };
   *|;
 
   main := |*
@@ -230,6 +232,8 @@ func lex(data []byte) []Token {
     "="           { EMITS(EQS) };
     "?"           { EMITS(QMARK) };
     ","           { EMITS(COMMA) };
+    "("           { EMITS(LPAREN) };
+    ")"           { EMITS(RPAREN) };
   *|;
 
   prepush {

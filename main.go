@@ -13,7 +13,7 @@ import (
 
 //var ex = []byte("{ a, b, a, c }@y: x")
 //var ex = []byte("let x = 123; y = 321; in x")
-var ex = []byte("1 * 2 + 3")
+var ex = []byte("x.a or x.b or x.c")
 
 //var ex = []byte("rec { a = 123; }")
 
@@ -46,7 +46,7 @@ func main() {
 	log.Println("LEXING")
 	tokens := lex(ex)
 	for _, tok := range tokens {
-		log.Println(printTok(tok))
+		fmt.Println(printTok(tok))
 	}
 
 	// synthesize some EOF tokens for the sake of lookahead
@@ -300,7 +300,7 @@ func (self *parser) parseExprFunction() (Expr, error) {
 			return nil, err
 		}
 
-		return ExprAssert{t1.Pos, attrs, body}, nil
+		return ExprWith{t1.Pos, attrs, body}, nil
 	case LET:
 		self.advance(1)
 
@@ -328,10 +328,8 @@ func (self *parser) parseExprFunction() (Expr, error) {
 		return ExprLet{t1.Pos, binds, body}, nil
 	case LCURLY:
 		if !self.isFunctionWithFormals() {
-			debug("WAS NOT FUNCTION")
 			goto Fallthrough
 		}
-		debug("WAS FUNCTION")
 
 		self.advance(1)
 
@@ -471,17 +469,11 @@ func (self *parser) parseExprIf() (Expr, error) {
 	}
 }
 
-var debug = log.Println
-
 // interesting cases:
 //   ---> ! { a = 1; } ? a || true
 func (self *parser) parseExprOp() (Expr, error) {
-	debug("PARSING OP")
-
 	ops := []Token{}
-	opn := 0
 	exprs := []Expr{}
-	exprn := 0
 	haveEq := false
 	haveImpl := false
 
@@ -491,27 +483,22 @@ func (self *parser) parseExprOp() (Expr, error) {
 			tok := self.tok(0)
 			if tok.TokenType == NOT {
 				ops = append(ops, tok)
-				opn++
 				self.advance(1)
 			} else if tok.TokenType == MINUS {
 				tok.TokenType = NEGATE
 				ops = append(ops, tok)
-				opn++
 				self.advance(1)
 			} else {
 				break
 			}
 		}
-		debug("DONE PUSHING UNARY")
 
 		// parse/push expr
 		expr, err := self.parseExprApp()
-		debug("DONE PARSING EXPR APP")
 		if err != nil {
 			return nil, err
 		}
 		exprs = append(exprs, expr)
-		exprn++
 
 		// next op
 		op1 := self.tok(0)
@@ -539,70 +526,66 @@ func (self *parser) parseExprOp() (Expr, error) {
 				haveImpl = true
 			}
 
-			for opn > 0 {
-				op2 := ops[opn-1]
+			for len(ops) > 0 {
+				op2 := ops[len(ops)-1]
 				op2_ := operators[op2.TokenType]
 				if op1_.Assoc == ASSOC_LEFT && op1_.Prec <= op2_.Prec ||
 					op1_.Assoc == ASSOC_RIGHT && op1_.Prec < op2_.Prec {
-					opn-- // pop op2 off stack
+					ops = ops[:len(ops)-1] // pop op2 off stack
 					// TODO: produce/push expr
 					switch op2.TokenType {
 					case '!':
-						exprs[exprn-1] = ExprOpNot{op2.Pos, exprs[exprn-1]}
+						exprs[len(exprs)-1] = ExprOpNot{op2.Pos, exprs[len(exprs)-1]}
 					case NEGATE:
-						exprs[exprn-1] = ExprOpNegate{op2.Pos, exprs[exprn-1]}
+						exprs[len(exprs)-1] = ExprOpNegate{op2.Pos, exprs[len(exprs)-1]}
 					case EQ:
-						exprs[exprn-2] = ExprOpEQ{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpEQ{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case NEQ:
-						exprs[exprn-2] = ExprOpNEQ{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpNEQ{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case '<':
-						exprs[exprn-2] = ExprOpLE{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpLE{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case LEQ:
-						exprs[exprn-2] = ExprOpLEQ{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpLEQ{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case '>':
-						exprs[exprn-2] = ExprOpGE{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpGE{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case GEQ:
-						exprs[exprn-2] = ExprOpGEQ{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpGEQ{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case AND:
-						exprs[exprn-2] = ExprOpAnd{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpAnd{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case OR:
-						exprs[exprn-2] = ExprOpOr{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpOr{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case IMPL:
-						exprs[exprn-2] = ExprOpImpl{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpImpl{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case UPDATE:
-						exprs[exprn-2] = ExprOpUpdate{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpUpdate{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case '?':
-						exprs[exprn-2] = ExprOpHasAttr{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpHasAttr{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case '+':
-						debug("Z EXPRN:", exprn)
-						debug("Z EXPRS:", exprs)
-						exprs[exprn-2] = ExprOpAdd{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpAdd{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case '-':
-						exprs[exprn-2] = ExprOpSub{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpSub{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case '*':
-						debug("Z EXPRN:", exprn)
-						debug("Z EXPRS:", exprs)
-						exprs[exprn-2] = ExprOpMult{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpMult{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case '/':
-						exprs[exprn-2] = ExprOpDiv{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpDiv{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					case CONCAT:
-						exprs[exprn-2] = ExprOpConcat{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
-						exprn--
+						exprs[len(exprs)-2] = ExprOpConcat{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs = exprs[:len(exprs)-1]
 					}
 				} else {
 					break
@@ -611,71 +594,65 @@ func (self *parser) parseExprOp() (Expr, error) {
 
 			// push the new op to the stack
 			ops = append(ops, op1)
-			debug("PUSHED:", op1)
-			opn++
 		} else {
 			// no more operators/exprs; pop remaining ops from stack
 			// TODO: find good way to dedupe this
-			for opn > 0 {
-				op := ops[opn-1]
-				opn-- // pop op off stack
+			for len(ops) > 0 {
+				op := ops[len(ops)-1]
+				ops = ops[:len(ops)-1] // pop op off stack
 				switch op.TokenType {
 				case '!':
-					exprs[exprn-1] = ExprOpNot{op.Pos, exprs[exprn-1]}
+					exprs[len(exprs)-1] = ExprOpNot{op.Pos, exprs[len(exprs)-1]}
 				case NEGATE:
-					exprs[exprn-1] = ExprOpNegate{op.Pos, exprs[exprn-1]}
+					exprs[len(exprs)-1] = ExprOpNegate{op.Pos, exprs[len(exprs)-1]}
 				case EQ:
-					exprs[exprn-2] = ExprOpEQ{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpEQ{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case NEQ:
-					exprs[exprn-2] = ExprOpNEQ{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpNEQ{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case '<':
-					exprs[exprn-2] = ExprOpLE{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpLE{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case LEQ:
-					exprs[exprn-2] = ExprOpLEQ{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpLEQ{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case '>':
-					exprs[exprn-2] = ExprOpGE{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpGE{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case GEQ:
-					exprs[exprn-2] = ExprOpGEQ{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpGEQ{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case AND:
-					exprs[exprn-2] = ExprOpAnd{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpAnd{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case OR:
-					exprs[exprn-2] = ExprOpOr{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpOr{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case IMPL:
-					exprs[exprn-2] = ExprOpImpl{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpImpl{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case UPDATE:
-					exprs[exprn-2] = ExprOpUpdate{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpUpdate{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case '?':
-					exprs[exprn-2] = ExprOpHasAttr{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpHasAttr{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case '+':
-					debug("EXPRN:", exprn)
-					debug("EXPRS:", exprs)
-					exprs[exprn-2] = ExprOpAdd{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpAdd{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case '-':
-					exprs[exprn-2] = ExprOpSub{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpSub{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case '*':
-					debug("EXPRN:", exprn)
-					debug("EXPRS:", exprs)
-					exprs[exprn-2] = ExprOpMult{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpMult{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case '/':
-					exprs[exprn-2] = ExprOpDiv{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpDiv{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				case CONCAT:
-					exprs[exprn-2] = ExprOpConcat{op.Pos, exprs[exprn-2], exprs[exprn-1]}
-					exprn--
+					exprs[len(exprs)-2] = ExprOpConcat{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs = exprs[:len(exprs)-1]
 				}
 			}
 
@@ -749,21 +726,14 @@ func getType(myvar interface{}) string {
 }
 
 func (self *parser) parseExprApp() (Expr, error) {
-	debug("TOK TYPE --->", self.tok(0).TokenType)
 	expr, err := self.parseExprSelect()
 	if err != nil {
 		return nil, err
 	}
-	log.Println("XXX:", getType(expr))
-	log.Println("XXX:", expr)
-	debug("TOK TYPE --->", self.tok(0).TokenType)
 
 	for {
-		// TODO: need way to know if parse really failed
-		// TODO: XXX: is this complete?
 		switch self.tok(0).TokenType {
 		case ID, INT, FLOAT, '"', IND_STRING_OPEN, PATH, HPATH, SPATH, URI, '(', LET, REC, '{', '[':
-			debug("zzTOK TYPE --->", self.tok(0).TokenType)
 
 			body, err := self.parseExprSelect()
 			if err != nil {
@@ -776,13 +746,10 @@ func (self *parser) parseExprApp() (Expr, error) {
 		}
 	}
 
-	log.Println("XXX: DONE PARSING APPS")
-
 	return expr, nil
 }
 
 func (self *parser) parseExprSelect() (Expr, error) {
-	debug("XXX: PARSING SELECT")
 	simple, err := self.parseExprSimple()
 	if err != nil {
 		return nil, err
@@ -797,13 +764,11 @@ func (self *parser) parseExprSelect() (Expr, error) {
 			return nil, err
 		}
 
-		// TODO: this needs to loop (e.g. a.x or b.y or <...>)
-
 		var def Expr
 		tok := self.tok(0)
 		if tok.TokenType == OR_KW {
 			self.advance(1)
-			def, err = self.parseExprSimple()
+			def, err = self.parseExprSelect()
 			if err != nil {
 				return nil, err
 			}
@@ -820,7 +785,6 @@ func (self *parser) parseExprSelect() (Expr, error) {
 
 func (self *parser) parseExprSimple() (Expr, error) {
 	t1 := self.tok(0)
-	debug("EXPR SIMPLE TOK:", t1)
 	switch t1.TokenType {
 	case ID:
 		self.advance(1)
@@ -973,8 +937,6 @@ func (self *parser) parseStringParts() (Expr, error) {
 
 	tok := self.tok(0)
 
-	log.Println("TOK:", self.tok(1))
-
 	// Exit early if this is just a simple string literal.
 	// We'll make use of the fact that we have an ExprString in this case
 	// elsewhere.
@@ -1027,7 +989,6 @@ func (self *parser) parseBinds() (ExprAttrs, error) {
 
 	for {
 		tok := self.tok(0)
-		debug("FATTY:", tok.TokenType)
 
 		switch tok.TokenType {
 		case '}', IN:
@@ -1111,7 +1072,6 @@ func (self *parser) parseBinds() (ExprAttrs, error) {
 				return binds, err
 			}
 
-			debug("TOKEN WAS:", self.tok(0).TokenType)
 			_, err = self.mustMatch('=', 0)
 			if err != nil {
 				return binds, err
@@ -1178,7 +1138,6 @@ func (self *parser) parseAttrPath() ([]AttrName, error) {
 
 	for {
 		tok := self.tok(0)
-		debug("ATTRPATH TOK::::", tok.TokenType)
 
 		switch tok.TokenType {
 		case ID, OR_KW:
