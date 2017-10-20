@@ -3,11 +3,23 @@ package main
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // var ex = []byte(". } http://foo.com <foo> 123 ~/a in 123.1 inter inherit ++ -> ${ ./foo/bar /** **/ ./baz # asdf\n foobar")
-var ex = []byte(`"abc ${foo.bar {}}  baz" ''foo ''$ baz''`)
+
+//var ex = []byte("{ a, b, a, c }@y: x")
+//var ex = []byte("let x = 123; y = 321; in x")
+var ex = []byte("1 * 2 + 3")
+
+//var ex = []byte("rec { a = 123; }")
+
+//var ex = []byte("foo.\"abc${bar}def\" ")
+
+//var ex = []byte(`"abc ${foo.bar {}}  baz" ''foo ''$ baz''`)
 
 // var ex = []byte(`'' ''\n ''`)
 
@@ -24,14 +36,31 @@ func printTok(tok Token) string {
 	return fmt.Sprintf("%v:%v  %s  [%s]", tok.Pos.Start, tok.Pos.End, tok.TokenType, string(tok.Text))
 }
 
+//func (self Pos) String() string {
+//	return fmt.Sprintf("(%v:%v)", self.Start, self.End)
+//}
+
 func main() {
+	data := ex
+
 	log.Println("LEXING")
 	tokens := lex(ex)
 	for _, tok := range tokens {
 		log.Println(printTok(tok))
-		//log.Println(tok)
 	}
-	//log.Println(tokens)
+
+	// synthesize some EOF tokens for the sake of lookahead
+	eof := Token{TokenType: EOF}
+	tokens = append(tokens, eof, eof, eof, eof)
+
+	p := parser{pos: 0, tokens: tokens, data: data}
+	expr, err := p.parseExpr()
+	if err != nil {
+		log.Fatalln("parse failed:", err)
+	}
+
+	spew.Dump(expr)
+	//log.Println(expr)
 }
 
 type parser struct {
@@ -42,7 +71,7 @@ type parser struct {
 
 func showAttrPath(attrPath []AttrName) string {
 	out := ""
-	first := false
+	first := true
 	for _, i := range attrPath {
 		if !first {
 			out = out + "."
@@ -62,13 +91,11 @@ func showAttrPath(attrPath []AttrName) string {
 }
 
 func dupAttrPath(attrPath []AttrName, pos Pos, prevPos Pos) error {
-	return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", showAttrPath(attrPath), "???", "???")
-	//return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", showAttrPath(attrPath), pos, prevPos)
+	return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", showAttrPath(attrPath), pos, prevPos)
 }
 
 func dupAttrSym(attr Symbol, pos Pos, prevPos Pos) error {
-	return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", attr, "???", "???")
-	//return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", attr, pos, prevPos)
+	return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", attr, pos, prevPos)
 }
 
 func addAttr(attrs ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
@@ -85,7 +112,10 @@ func addAttr(attrs ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
 					return dupAttrPath(attrPath, pos, existing.Pos)
 				}
 			} else {
-				nested := ExprAttrs{}
+				nested := ExprAttrs{
+					AttrDefs:        map[string]AttrDef{},
+					DynamicAttrDefs: map[string]DynamicAttrDef{},
+				}
 				attrs.AttrDefs[string(attr.Symbol)] = AttrDef{
 					Expr:      nested,
 					Inherited: false,
@@ -93,7 +123,11 @@ func addAttr(attrs ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
 				attrs = nested
 			}
 		} else {
-			nested := ExprAttrs{}
+			nested := ExprAttrs{
+				AttrDefs:        map[string]AttrDef{},
+				DynamicAttrDefs: map[string]DynamicAttrDef{},
+			}
+
 			attrs.DynamicAttrDefs[string(attr.Symbol)] = DynamicAttrDef{
 				NameExpr:  attr.Expr,
 				ValueExpr: nested,
@@ -102,7 +136,7 @@ func addAttr(attrs ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
 		}
 	}
 
-	attr := attrPath[len(attrPath)]
+	attr := attrPath[len(attrPath)-1]
 	if attr.Expr == nil {
 		if existing, ok := attrs.AttrDefs[string(attr.Symbol)]; ok {
 			_ = existing
@@ -118,9 +152,9 @@ func addAttr(attrs ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
 	return nil
 }
 
-func addFormal(formals *Formals, formal Formal) error {
+func addFormal(pos Pos, formals *Formals, formal Formal) error {
 	if _, ok := formals.ArgNames[string(formal.Name)]; ok {
-		return fmt.Errorf("duplicate formal function argument ‘%s’ at %s", "???", "???")
+		return fmt.Errorf("duplicate formal function argument ‘%s’ at %s", formal.Name, pos)
 	}
 
 	formals.ArgNames[string(formal.Name)] = struct{}{}
@@ -128,12 +162,17 @@ func addFormal(formals *Formals, formal Formal) error {
 	return nil
 }
 
-func (self parser) tok(offset int) Token {
+func (self *parser) tok(offset int) Token {
 	return self.tokens[self.pos+offset]
 }
 
-func (self parser) advance(offset int) {
+func (self *parser) advance(offset int) {
 	self.pos += offset
+}
+
+func unexpected() error {
+	panic("unexpected token")
+	return UnexpectedToken{}
 }
 
 type UnexpectedToken struct {
@@ -143,19 +182,19 @@ func (self UnexpectedToken) Error() string {
 	return "Unexpected Token"
 }
 
-func (self parser) mustMatch(typ TokenType, offset int) (Token, error) {
+func (self *parser) mustMatch(typ TokenType, offset int) (Token, error) {
 	tok := self.tok(offset)
 	if tok.TokenType != typ {
-		return tok, UnexpectedToken{}
+		return tok, unexpected()
 	}
 	return tok, nil
 }
 
-func (self parser) parseExpr() (Expr, error) {
+func (self *parser) parseExpr() (Expr, error) {
 	return self.parseExprFunction()
 }
 
-func (self parser) parseExprFunction() (Expr, error) {
+func (self *parser) parseExprFunction() (Expr, error) {
 	t1 := self.tok(0)
 
 	switch t1.TokenType {
@@ -181,7 +220,7 @@ func (self parser) parseExprFunction() (Expr, error) {
 
 			return lambda, nil
 		case AT:
-			_, err := self.mustMatch(LCURLY, 0)
+			_, err := self.mustMatch(LCURLY, 2)
 			if err != nil {
 				return nil, err
 			}
@@ -270,6 +309,10 @@ func (self parser) parseExprFunction() (Expr, error) {
 			return nil, err
 		}
 
+		if len(binds.DynamicAttrDefs) != 0 {
+			return nil, fmt.Errorf("dynamic attributes not allowed in let at %s", t1)
+		}
+
 		_, err = self.mustMatch(IN, 0)
 		if err != nil {
 			return nil, err
@@ -285,8 +328,10 @@ func (self parser) parseExprFunction() (Expr, error) {
 		return ExprLet{t1.Pos, binds, body}, nil
 	case LCURLY:
 		if !self.isFunctionWithFormals() {
+			debug("WAS NOT FUNCTION")
 			goto Fallthrough
 		}
+		debug("WAS FUNCTION")
 
 		self.advance(1)
 
@@ -310,7 +355,7 @@ func (self parser) parseExprFunction() (Expr, error) {
 				return nil, err
 			}
 
-			self.advance(3)
+			self.advance(4)
 
 			body, err := self.parseExprFunction()
 			if err != nil {
@@ -352,7 +397,7 @@ Fallthrough:
 	return self.parseExprIf()
 }
 
-func (self parser) isTok(offset int, typ TokenType) bool {
+func (self *parser) isTok(offset int, typ TokenType) bool {
 	return self.tok(offset).TokenType == typ
 }
 
@@ -361,8 +406,7 @@ func (self parser) isTok(offset int, typ TokenType) bool {
 // The subsequent tokens are part of a function with formals when they are one
 // of the following sequences:
 //
-//     '{' ID '}' ':'
-//     '{' ID '}' '@'
+//     '{' ID '}'
 //     '{' ID ','
 //     '{' ID '?'
 //     '{' '}' ':'
@@ -370,13 +414,12 @@ func (self parser) isTok(offset int, typ TokenType) bool {
 //     '{' ELLIPSIS
 //
 // Otherwise, the tokens begin an attr-set.
-func (self parser) isFunctionWithFormals() bool {
+func (self *parser) isFunctionWithFormals() bool {
 	if !self.isTok(0, '{') {
 		return false
 	}
 
-	return (self.isTok(1, ID) && self.isTok(2, '}') && self.isTok(3, ':')) ||
-		(self.isTok(1, ID) && self.isTok(2, '}') && self.isTok(3, '@')) ||
+	return (self.isTok(1, ID) && self.isTok(2, '}')) ||
 		(self.isTok(1, ID) && self.isTok(2, ',')) ||
 		(self.isTok(1, ID) && self.isTok(2, '?')) ||
 		(self.isTok(1, '}') && self.isTok(2, ':')) ||
@@ -388,7 +431,7 @@ func undefined() Expr {
 	return nil
 }
 
-func (self parser) parseExprIf() (Expr, error) {
+func (self *parser) parseExprIf() (Expr, error) {
 	t1 := self.tok(0)
 	if t1.TokenType == IF {
 		self.advance(1)
@@ -428,9 +471,13 @@ func (self parser) parseExprIf() (Expr, error) {
 	}
 }
 
+var debug = log.Println
+
 // interesting cases:
 //   ---> ! { a = 1; } ? a || true
-func (self parser) parseExprOp() (Expr, error) {
+func (self *parser) parseExprOp() (Expr, error) {
+	debug("PARSING OP")
+
 	ops := []Token{}
 	opn := 0
 	exprs := []Expr{}
@@ -451,36 +498,43 @@ func (self parser) parseExprOp() (Expr, error) {
 				ops = append(ops, tok)
 				opn++
 				self.advance(1)
+			} else {
+				break
 			}
 		}
+		debug("DONE PUSHING UNARY")
 
 		// parse/push expr
 		expr, err := self.parseExprApp()
+		debug("DONE PARSING EXPR APP")
 		if err != nil {
 			return nil, err
 		}
 		exprs = append(exprs, expr)
+		exprn++
 
 		// next op
 		op1 := self.tok(0)
 		if isOperator(op1.TokenType) {
+			self.advance(1)
+			fmt.Println("GOT OP:", op1)
 			op1_ := operators[op1.TokenType]
 
 			// sanity check
 			switch op1.TokenType {
 			case EQ:
 				if haveEq {
-					return nil, UnexpectedToken{}
+					return nil, unexpected()
 				}
 				haveEq = true
 			case NEQ:
 				if haveEq {
-					return nil, UnexpectedToken{}
+					return nil, unexpected()
 				}
 				haveEq = true
 			case IMPL:
 				if haveImpl {
-					return nil, UnexpectedToken{}
+					return nil, unexpected()
 				}
 				haveImpl = true
 			}
@@ -531,12 +585,16 @@ func (self parser) parseExprOp() (Expr, error) {
 						exprs[exprn-2] = ExprOpHasAttr{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
 						exprn--
 					case '+':
+						debug("Z EXPRN:", exprn)
+						debug("Z EXPRS:", exprs)
 						exprs[exprn-2] = ExprOpAdd{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
 						exprn--
 					case '-':
 						exprs[exprn-2] = ExprOpSub{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
 						exprn--
 					case '*':
+						debug("Z EXPRN:", exprn)
+						debug("Z EXPRS:", exprs)
 						exprs[exprn-2] = ExprOpMult{op2.Pos, exprs[exprn-2], exprs[exprn-1]}
 						exprn--
 					case '/':
@@ -553,12 +611,14 @@ func (self parser) parseExprOp() (Expr, error) {
 
 			// push the new op to the stack
 			ops = append(ops, op1)
+			debug("PUSHED:", op1)
 			opn++
 		} else {
 			// no more operators/exprs; pop remaining ops from stack
 			// TODO: find good way to dedupe this
 			for opn > 0 {
 				op := ops[opn-1]
+				opn-- // pop op off stack
 				switch op.TokenType {
 				case '!':
 					exprs[exprn-1] = ExprOpNot{op.Pos, exprs[exprn-1]}
@@ -598,12 +658,16 @@ func (self parser) parseExprOp() (Expr, error) {
 					exprs[exprn-2] = ExprOpHasAttr{op.Pos, exprs[exprn-2], exprs[exprn-1]}
 					exprn--
 				case '+':
+					debug("EXPRN:", exprn)
+					debug("EXPRS:", exprs)
 					exprs[exprn-2] = ExprOpAdd{op.Pos, exprs[exprn-2], exprs[exprn-1]}
 					exprn--
 				case '-':
 					exprs[exprn-2] = ExprOpSub{op.Pos, exprs[exprn-2], exprs[exprn-1]}
 					exprn--
 				case '*':
+					debug("EXPRN:", exprn)
+					debug("EXPRS:", exprs)
 					exprs[exprn-2] = ExprOpMult{op.Pos, exprs[exprn-2], exprs[exprn-1]}
 					exprn--
 				case '/':
@@ -614,7 +678,10 @@ func (self parser) parseExprOp() (Expr, error) {
 					exprn--
 				}
 			}
+
+			return exprs[0], nil
 		}
+
 	}
 
 	return exprs[0], nil
@@ -673,26 +740,49 @@ func isOperator(ty TokenType) bool {
 		ty == NEGATE
 }
 
-func (self parser) parseExprApp() (Expr, error) {
+func getType(myvar interface{}) string {
+	if t := reflect.TypeOf(myvar); t.Kind() == reflect.Ptr {
+		return "*" + t.Elem().Name()
+	} else {
+		return t.Name()
+	}
+}
+
+func (self *parser) parseExprApp() (Expr, error) {
+	debug("TOK TYPE --->", self.tok(0).TokenType)
 	expr, err := self.parseExprSelect()
 	if err != nil {
 		return nil, err
 	}
+	log.Println("XXX:", getType(expr))
+	log.Println("XXX:", expr)
+	debug("TOK TYPE --->", self.tok(0).TokenType)
 
 	for {
 		// TODO: need way to know if parse really failed
-		body, err := self.parseExprSelect()
-		if err != nil {
-			return nil, err
-		}
+		// TODO: XXX: is this complete?
+		switch self.tok(0).TokenType {
+		case ID, INT, FLOAT, '"', IND_STRING_OPEN, PATH, HPATH, SPATH, URI, '(', LET, REC, '{', '[':
+			debug("zzTOK TYPE --->", self.tok(0).TokenType)
 
-		expr = ExprApp{Pos{}, expr, body}
+			body, err := self.parseExprSelect()
+			if err != nil {
+				return nil, err
+			}
+
+			expr = ExprApp{Pos{}, expr, body}
+		default:
+			return expr, nil
+		}
 	}
+
+	log.Println("XXX: DONE PARSING APPS")
 
 	return expr, nil
 }
 
-func (self parser) parseExprSelect() (Expr, error) {
+func (self *parser) parseExprSelect() (Expr, error) {
+	debug("XXX: PARSING SELECT")
 	simple, err := self.parseExprSimple()
 	if err != nil {
 		return nil, err
@@ -701,10 +791,13 @@ func (self parser) parseExprSelect() (Expr, error) {
 	tok := self.tok(0)
 	switch tok.TokenType {
 	case DOT:
+		self.advance(1)
 		path, err := self.parseAttrPath()
 		if err != nil {
 			return nil, err
 		}
+
+		// TODO: this needs to loop (e.g. a.x or b.y or <...>)
 
 		var def Expr
 		tok := self.tok(0)
@@ -718,14 +811,16 @@ func (self parser) parseExprSelect() (Expr, error) {
 
 		return ExprSelect{Pos{}, simple, path, def}, nil
 	case OR_KW:
+		self.advance(1)
 		return ExprApp{Pos{}, simple, ExprVar{tok.Pos, []byte("or")}}, nil
 	}
 
 	return simple, nil
 }
 
-func (self parser) parseExprSimple() (Expr, error) {
+func (self *parser) parseExprSimple() (Expr, error) {
 	t1 := self.tok(0)
+	debug("EXPR SIMPLE TOK:", t1)
 	switch t1.TokenType {
 	case ID:
 		self.advance(1)
@@ -820,10 +915,12 @@ func (self parser) parseExprSimple() (Expr, error) {
 		return ExprSelect{Pos{}, binds, attrPath, nil}, nil
 	case REC:
 		self.advance(1)
+
 		_, err := self.mustMatch('{', 0)
 		if err != nil {
 			return nil, err
 		}
+		self.advance(1)
 
 		binds, err := self.parseBinds()
 		if err != nil {
@@ -868,13 +965,15 @@ func (self parser) parseExprSimple() (Expr, error) {
 		return list, err
 	}
 
-	return nil, UnexpectedToken{}
+	return nil, unexpected()
 }
 
-func (self parser) parseStringParts() (Expr, error) {
+func (self *parser) parseStringParts() (Expr, error) {
 	parts := []Expr{}
 
 	tok := self.tok(0)
+
+	log.Println("TOK:", self.tok(1))
 
 	// Exit early if this is just a simple string literal.
 	// We'll make use of the fact that we have an ExprString in this case
@@ -920,15 +1019,19 @@ func (self parser) parseStringParts() (Expr, error) {
 	return concatExpr, nil
 }
 
-func (self parser) parseBinds() (ExprAttrs, error) {
-	binds := ExprAttrs{}
+func (self *parser) parseBinds() (ExprAttrs, error) {
+	binds := ExprAttrs{
+		AttrDefs:        map[string]AttrDef{},
+		DynamicAttrDefs: map[string]DynamicAttrDef{},
+	}
 
 	for {
 		tok := self.tok(0)
+		debug("FATTY:", tok.TokenType)
 
 		switch tok.TokenType {
 		case '}', IN:
-			break
+			return binds, nil
 		}
 
 		switch tok.TokenType {
@@ -1008,6 +1111,7 @@ func (self parser) parseBinds() (ExprAttrs, error) {
 				return binds, err
 			}
 
+			debug("TOKEN WAS:", self.tok(0).TokenType)
 			_, err = self.mustMatch('=', 0)
 			if err != nil {
 				return binds, err
@@ -1036,7 +1140,7 @@ func (self parser) parseBinds() (ExprAttrs, error) {
 	return binds, nil
 }
 
-func (self parser) parseAttrs() ([]AttrName, error) {
+func (self *parser) parseAttrs() ([]AttrName, error) {
 	attrs := []AttrName{}
 
 	for {
@@ -1062,18 +1166,19 @@ func (self parser) parseAttrs() ([]AttrName, error) {
 				return nil, fmt.Errorf("dynamic attributes not allowed in inherit at %s", "???")
 			}
 		default:
-			break
+			return attrs, nil
 		}
 	}
 
 	return attrs, nil
 }
 
-func (self parser) parseAttrPath() ([]AttrName, error) {
+func (self *parser) parseAttrPath() ([]AttrName, error) {
 	attrs := []AttrName{}
 
 	for {
 		tok := self.tok(0)
+		debug("ATTRPATH TOK::::", tok.TokenType)
 
 		switch tok.TokenType {
 		case ID, OR_KW:
@@ -1106,7 +1211,7 @@ func (self parser) parseAttrPath() ([]AttrName, error) {
 	return attrs, nil
 }
 
-func (self parser) parseAttr() (string, error) {
+func (self *parser) parseAttr() (string, error) {
 	tok := self.tok(0)
 	self.advance(1)
 	switch tok.TokenType {
@@ -1115,11 +1220,11 @@ func (self parser) parseAttr() (string, error) {
 	case OR_KW:
 		return "or", nil
 	default:
-		return "", UnexpectedToken{}
+		return "", unexpected()
 	}
 }
 
-func (self parser) parseStringAttr() (Expr, error) {
+func (self *parser) parseStringAttr() (Expr, error) {
 	tok := self.tok(0)
 	self.advance(1)
 	switch tok.TokenType {
@@ -1150,11 +1255,11 @@ func (self parser) parseStringAttr() (Expr, error) {
 
 		return expr, err
 	default:
-		return nil, UnexpectedToken{}
+		return nil, unexpected()
 	}
 }
 
-func (self parser) parseExprList() (ExprList, error) {
+func (self *parser) parseExprList() (ExprList, error) {
 	elems := []Expr{}
 	tok := self.tok(0)
 
@@ -1176,7 +1281,7 @@ func (self parser) parseExprList() (ExprList, error) {
 	return ExprList{Elems: elems}, nil
 }
 
-func (self parser) parseFormals() (Formals, error) {
+func (self *parser) parseFormals() (Formals, error) {
 	formals := Formals{
 		ArgNames: map[string]struct{}{},
 		Formals:  []Formal{},
@@ -1190,7 +1295,7 @@ func (self parser) parseFormals() (Formals, error) {
 		case ELLIPSIS:
 			self.advance(1)
 			formals.Ellipsis = true
-			break
+			return formals, nil
 		case ',':
 			self.advance(1)
 		case ID:
@@ -1199,7 +1304,12 @@ func (self parser) parseFormals() (Formals, error) {
 				return Formals{}, err
 			}
 
-			addFormal(&formals, formal)
+			err = addFormal(tok.Pos, &formals, formal)
+			if err != nil {
+				return Formals{}, err
+			}
+		default:
+			return formals, nil
 		}
 
 		tok = self.tok(0)
@@ -1208,8 +1318,8 @@ func (self parser) parseFormals() (Formals, error) {
 	return formals, nil
 }
 
-func (self parser) parseFormal() (Formal, error) {
-	tokId, err := self.mustMatch('"', 0)
+func (self *parser) parseFormal() (Formal, error) {
+	tokId, err := self.mustMatch(ID, 0)
 	if err != nil {
 		return Formal{}, err
 	}

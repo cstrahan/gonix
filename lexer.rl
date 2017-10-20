@@ -122,6 +122,7 @@ func lex(data []byte) []Token {
     "-"           { EMITS(MINUS) };
     "+"           { EMITS(PLUS) };
     "!"           { EMITS(NOT) };
+    "*"           { EMITS(STAR) };
 
     "=="          { EMITS(EQ) };
     "!="          { EMITS(NEQ) };
@@ -134,8 +135,8 @@ func lex(data []byte) []Token {
     "++"          { EMITS(CONCAT) };
 
     ID            { EMIT_TEXT(ID, ts, te, data[ts:te]) };
-    INT           { EMITS(INT) };
-    FLOAT         { EMITS(FLOAT) };
+    INT           { EMIT_TEXT(INT, ts, te, data[ts:te]) };
+    FLOAT         { EMIT_TEXT(FLOAT, ts, te, data[ts:te]) };
 
     "${"          { EMITS(DOLLAR_CURLY);
                     fcall inside_dollar_curly; };
@@ -162,6 +163,10 @@ func lex(data []byte) []Token {
 
     '"'           { EMITS(DQUOTE);
                     fcall string; };
+
+    "="           { EMITS('=') };
+    "?"           { EMITS('?') };
+    ","           { EMITS(',') };
   *|;
 
   main := |*
@@ -182,6 +187,7 @@ func lex(data []byte) []Token {
     "-"           { EMITS(MINUS) };
     "+"           { EMITS(PLUS) };
     "!"           { EMITS(NOT) };
+    "*"           { EMITS(STAR) };
 
     "=="          { EMITS(EQ) };
     "!="          { EMITS(NEQ) };
@@ -194,8 +200,8 @@ func lex(data []byte) []Token {
     "++"          { EMITS(CONCAT) };
 
     ID            { EMIT_TEXT(ID, ts, te, data[ts:te]) };
-    INT           { EMITS(INT) };
-    FLOAT         { EMITS(FLOAT) };
+    INT           { EMIT_TEXT(INT, ts, te, data[ts:te]) };
+    FLOAT         { EMIT_TEXT(FLOAT, ts, te, data[ts:te]) };
 
     "${"          { EMITS(DOLLAR_CURLY);
                     fcall inside_dollar_curly; };
@@ -220,6 +226,10 @@ func lex(data []byte) []Token {
 
     '"'           { EMITS(DQUOTE);
                     fcall string; };
+
+    "="           { EMITS(EQS) };
+    "?"           { EMITS(QMARK) };
+    ","           { EMITS(COMMA) };
   *|;
 
   prepush {

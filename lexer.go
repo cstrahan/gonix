@@ -1,10 +1,5 @@
 package main
 
-//go:generate ragel -G2 -Z lexer.rl -o lexer-generated.go.in
-//go:generate echo $PATH > foo.txt
-//go:generate cpp -traditional-cpp -P -undef -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C lexer-generated.go.in > lexer-generated.go
-//go:generate rm lexer-generated.go.in
-
 const (
 	IF = iota
 	THEN
@@ -50,6 +45,10 @@ const (
 	MINUS  = 45
 	PLUS   = 43
 	NOT    = 33
+	QMARK  = 63
+	COMMA  = 44
+	EQS    = 61
+	STAR   = 42
 
 	// Non-ASCII cont.
 	NEGATE           = 126
@@ -57,6 +56,7 @@ const (
 	IND_STR          = 128
 	IND_STRING_OPEN  = 129
 	IND_STRING_CLOSE = 130
+	EOF              = 131
 )
 
 type Token struct {
@@ -69,9 +69,6 @@ type Pos struct {
 	Start int
 	End   int
 }
-
-//func (*Pos) String() string {
-//}
 
 type TokenType int
 
@@ -111,6 +108,7 @@ var tokens = [...]string{
 	IND_STR:          "IND_STR",
 	IND_STRING_OPEN:  "IND_STRING_OPEN",
 	IND_STRING_CLOSE: "IND_STRING_CLOSE",
+	EOF:              "EOF",
 }
 
 func (tok TokenType) String() string {
