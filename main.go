@@ -5,23 +5,29 @@ import (
 	"log"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 )
 
 // var ex = []byte(". } http://foo.com <foo> 123 ~/a in 123.1 inter inherit ++ -> ${ ./foo/bar /** **/ ./baz # asdf\n foobar")
 
+//var ex = []byte("1 + 2 * 3")
+
 //var ex = []byte("{ a, b, a, c }@y: x")
 //var ex = []byte("let x = 123; y = 321; in x")
-var ex = []byte("x.a or x.b or x.c")
+//var ex = []byte("x.a or x.b or x.c")
 
 //var ex = []byte("rec { a = 123; }")
 
 //var ex = []byte("foo.\"abc${bar}def\" ")
 
 //var ex = []byte(`"abc ${foo.bar {}}  baz" ''foo ''$ baz''`)
+var ex = []byte(`''
+  foo
+''`)
 
-// var ex = []byte(`'' ''\n ''`)
+//var ex = []byte(`'' ''\n ''`)
 
 // var ex = []byte(`'' ''$ ''`)
 
@@ -160,6 +166,112 @@ func addFormal(pos Pos, formals *Formals, formal Formal) error {
 	formals.ArgNames[string(formal.Name)] = struct{}{}
 	formals.Formals = append(formals.Formals, formal)
 	return nil
+}
+
+func stripIndentation(pos Pos, exprs []Expr) Expr {
+	if len(exprs) == 0 {
+		return ExprString{[]byte("")}
+	}
+
+	atStartOfLine := true
+	minIndent := 1000000
+	curIndent := 0
+
+	// Figure out minimum indentation.
+	for _, expr := range exprs {
+		e, ok := expr.(exprIndStr)
+		if !ok {
+			// Anti-quotations end the current start-of-line whitespace.
+			if atStartOfLine {
+				atStartOfLine = false
+				if curIndent < minIndent {
+					minIndent = curIndent
+				}
+			}
+			continue
+		}
+		for j := 0; j < len(e.String); j++ {
+			if atStartOfLine {
+				if e.String[j] == ' ' {
+					curIndent++
+				} else if e.String[j] == '\n' {
+					curIndent = 0
+				} else {
+					atStartOfLine = false
+					if curIndent < minIndent {
+						minIndent = curIndent
+					}
+				}
+			} else if e.String[j] == '\n' {
+				atStartOfLine = true
+				curIndent = 0
+			}
+		}
+	}
+
+	// Strip spaces from each line.
+	exprs2 := []Expr{}
+	atStartOfLine = true
+	curDropped := 0
+	for n, i := range exprs {
+		e, ok := i.(exprIndStr)
+		if !ok {
+			atStartOfLine = false
+			curDropped = 0
+			exprs2 = append(exprs2, i)
+			continue
+		}
+
+		str2 := ""
+		for j := 0; j < len(e.String); j++ {
+			if atStartOfLine {
+				if e.String[j] == ' ' {
+					if curDropped >= minIndent {
+						str2 += string(e.String[j])
+					}
+					curDropped++
+				} else if e.String[j] == '\n' {
+					curDropped = 0
+					str2 += string(e.String[j])
+				} else {
+					atStartOfLine = false
+					curDropped = 0
+					str2 += string(e.String[j])
+				}
+			} else {
+				str2 += string(e.String[j])
+				if e.String[j] == '\n' {
+					atStartOfLine = true
+				}
+			}
+		}
+
+		// Remove the last line if it is empty and consists only of spaces.
+		if n == len(exprs)-1 {
+			idx := strings.LastIndexByte(str2, '\n')
+			if idx != -1 {
+				for k := idx + 1; k < len(str2); k++ {
+					if str2[k] != ' ' {
+						goto Done
+					}
+				}
+
+				str2 = str2[0:idx]
+			}
+		}
+
+	Done:
+		exprs2 = append(exprs2, ExprString{String: []byte(str2)})
+	}
+
+	// If this is a single string, then don't do a concatenation.
+	if len(exprs2) == 1 {
+		if e, ok := exprs2[0].(ExprString); ok {
+			return e
+		}
+	}
+
+	return ExprConcatStrings{Exprs: exprs2, ForceString: true}
 }
 
 func (self *parser) tok(offset int) Token {
@@ -504,7 +616,6 @@ func (self *parser) parseExprOp() (Expr, error) {
 		op1 := self.tok(0)
 		if isOperator(op1.TokenType) {
 			self.advance(1)
-			fmt.Println("GOT OP:", op1)
 			op1_ := operators[op1.TokenType]
 
 			// sanity check
@@ -815,7 +926,7 @@ func (self *parser) parseExprSimple() (Expr, error) {
 	case IND_STRING_OPEN:
 		self.advance(1)
 
-		stringParts, err := self.parseStringParts()
+		stringParts, err := self.parseIndStringParts()
 		if err != nil {
 			return nil, err
 		}
@@ -824,9 +935,9 @@ func (self *parser) parseExprSimple() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		self.advance(1)
-		return stringParts, nil
+
+		return stripIndentation(t1.Pos, stringParts), nil
 	case PATH:
 		self.advance(1)
 		return ExprPath{string(t1.Text)}, nil
@@ -947,10 +1058,6 @@ func (self *parser) parseStringParts() (Expr, error) {
 	}
 
 	for {
-		if tok.TokenType == '"' {
-			break
-		}
-
 		switch tok.TokenType {
 		case STR:
 			self.advance(1)
@@ -960,7 +1067,6 @@ func (self *parser) parseStringParts() (Expr, error) {
 		case DOLLAR_CURLY:
 			self.advance(1)
 
-			// TODO: inform parseExpr that a '}' is coming up
 			expr, err := self.parseExpr()
 			if err != nil {
 				return nil, err
@@ -972,13 +1078,53 @@ func (self *parser) parseStringParts() (Expr, error) {
 				return nil, err
 			}
 			self.advance(1)
+		default:
+			goto Break
 		}
 
 		tok = self.tok(0)
 	}
 
+Break:
 	concatExpr := ExprConcatStrings{Exprs: parts, ForceString: true}
 	return concatExpr, nil
+}
+
+func (self *parser) parseIndStringParts() ([]Expr, error) {
+	parts := []Expr{}
+
+	tok := self.tok(0)
+
+	for {
+		switch tok.TokenType {
+		case IND_STR:
+			self.advance(1)
+
+			str := exprIndStr{String: tok.Text}
+			parts = append(parts, str)
+		case DOLLAR_CURLY:
+			self.advance(1)
+
+			expr, err := self.parseExpr()
+			if err != nil {
+				return nil, err
+			}
+			parts = append(parts, expr)
+
+			_, err = self.mustMatch(RCURLY, 0)
+			if err != nil {
+				return nil, err
+			}
+			self.advance(1)
+		default:
+			goto Break
+		}
+
+		tok = self.tok(0)
+	}
+
+Break:
+	return parts, nil
 }
 
 func (self *parser) parseBinds() (ExprAttrs, error) {
@@ -1005,7 +1151,6 @@ func (self *parser) parseBinds() (ExprAttrs, error) {
 				self.advance(1)
 				tok = self.tok(0)
 
-				// TODO: inform parseExpr that a ')' is coming up
 				expr, err := self.parseExpr()
 				if err != nil {
 					return binds, err
@@ -1078,7 +1223,6 @@ func (self *parser) parseBinds() (ExprAttrs, error) {
 			}
 			self.advance(1)
 
-			// TODO: inform parseExpr that a ';' is coming up
 			expr, err := self.parseExpr()
 			if err != nil {
 				return binds, err
@@ -1286,7 +1430,6 @@ func (self *parser) parseFormal() (Formal, error) {
 
 	if self.tok(0).TokenType == '?' {
 		self.advance(1)
-		// TODO: inform parseExpr that a ',' or '} is coming up
 		expr, err := self.parseExpr()
 		if err != nil {
 			return Formal{}, err
@@ -1508,6 +1651,11 @@ type ExprPath struct {
 }
 
 type ExprString struct {
+	String []byte
+}
+
+// Temporary structure during parse.
+type exprIndStr struct {
 	String []byte
 }
 
