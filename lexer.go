@@ -51,6 +51,8 @@ const (
 	STAR   = 42
 	LPAREN = 40
 	RPAREN = 41
+	LBRACK = 91
+	RBRACK = 93
 
 	// Non-ASCII cont.
 	NEGATE           = 126
@@ -70,6 +72,8 @@ type Token struct {
 type Pos struct {
 	Start int
 	End   int
+	Row   int
+	Col   int
 }
 
 type TokenType int

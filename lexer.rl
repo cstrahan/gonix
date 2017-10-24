@@ -1,8 +1,10 @@
 package main
 
+import "fmt"
+
 #define EMITS(type) EMIT(type, ts, te)
 #define EMIT(type, ts, te) EMIT_TEXT(type, ts, te, nil)
-#define EMIT_TEXT(type, ts, te, text) tokens = append(tokens, Token{ TokenType: TokenType(type), Pos: Pos { ts, te }, Text: text })
+#define EMIT_TEXT(type, ts, te, text) tokens = append(tokens, Token{ TokenType: TokenType(type), Pos: Pos { ts, te, lineCount+1, (ts-lineStart)+1 }, Text: text })
 
 func unescapeStr(s []byte) []byte {
   t := []byte{}
@@ -36,7 +38,7 @@ func unescapeStr(s []byte) []byte {
   return t
 }
 
-func lex(data []byte) []Token {
+func lex(data []byte) ([]Token, error) {
 %% machine scanner;
 %% write data;
 
@@ -59,12 +61,18 @@ func lex(data []byte) []Token {
   top := 0
   stack := make([]int, 4, 4)
 
+  var lineStart int
+  var lineCount int
+
   _, _, _, _, _, _ = top, ts, te, act, eof, stack
 
   tokens := make([]Token, 0, 0)
   _ = tokens
 
 %%{
+
+  # This machine matches everything, taking note of newlines.
+  NL        =  ( any | '\n' @{ lineStart = p+1; lineCount++ } )*;
 
   ID        =  [a-zA-Z_] [a-zA-Z0-9_'\-]*;
   INT       =  [0-9]+;
@@ -74,15 +82,15 @@ func lex(data []byte) []Token {
   SPATH     =  "<" [a-zA-Z0-9._\-+]+ ("/" [a-zA-Z0-9._\-+]+)* ">";
   URI       =  [a-zA-Z] [a-zA-Z0-9+\-.]* ":" [a-zA-Z0-9%/?:@&=+$,\-_.!~*']+;
   SCOMMENT  =  /#[^\r\n]*/;
-  LCOMMENT  =  '/*' ( any* - ( any* '*/' any* ) ) '*/';
+  LCOMMENT  =  ('/*' ( any* - ( any* '*/' any* ) ) '*/') & NL;
 
   string := |*
-    ( [^$"\\] | '$' [^{"\\] | '\\' any | '$\\' any )* '$"'
+    ( [^$"\\] | '$' [^{"\\] | '\\' (any & NL) | '$\\' (any & NL) )* '$"'
                   { EMIT_TEXT(STR, ts, te-1, data[ts:te-1]);
                     EMIT(DQUOTE, te-1, te);
                     fret;
                   };
-    ( [^$"\\] | '$' [^{"\\] | '\\' any | '$\\' any )+
+    ( [^$"\\] | '$' [^{"\\] | '\\' (any & NL) | '$\\' (any & NL) )+
                   { EMIT_TEXT(STR, ts, te, data[ts:te])
                   };
     "${"          { EMITS(DOLLAR_CURLY);
@@ -92,16 +100,16 @@ func lex(data []byte) []Token {
   *|;
 
   ind_string := |*
-    ( [^$'] | '$' [^{'] | "'" [^'$] )+
-                  { EMIT_TEXT(IND_STR, ts, te, data[ts:te]) };
-    "''$"         { EMIT_TEXT(IND_STR, ts, te, []byte("$")) };
-    "'''"         { EMIT_TEXT(IND_STR, ts, te, []byte("'")) };
-    "''\\" any    { EMIT_TEXT(IND_STR, ts, te, unescapeStr(data[ts+2:te])) };
-    "${"          { EMITS(DOLLAR_CURLY);
-                    fcall inside_dollar_curly; };
-    "''"          { EMITS(IND_STRING_CLOSE);
-                    fret; };
-    "'"           { EMIT_TEXT(IND_STR, ts, te, []byte("'")) };
+    ( [^$'] | '$' [^{'] | "'" [^'$] )+ & NL
+                        { EMIT_TEXT(IND_STR, ts, te, data[ts:te]) };
+    "''$"               { EMIT_TEXT(IND_STR, ts, te, []byte("$")) };
+    "'''"               { EMIT_TEXT(IND_STR, ts, te, []byte("'")) };
+    "''\\" (any & NL)   { EMIT_TEXT(IND_STR, ts, te, unescapeStr(data[ts+2:te])) };
+    "${"                { EMITS(DOLLAR_CURLY);
+                          fcall inside_dollar_curly; };
+    "''"                { EMITS(IND_STRING_CLOSE);
+                          fret; };
+    "'"                 { EMIT_TEXT(IND_STR, ts, te, []byte("'")) };
   *|;
 
   inside_dollar_curly := |*
@@ -145,7 +153,7 @@ func lex(data []byte) []Token {
     "{"           { EMITS(LCURLY)
                     fcall inside_dollar_curly; };
 
-    "''" (' '* '\n')?
+    "''" (' '* ('\n' & NL))?
                   { EMITS(IND_STRING_OPEN);
                     fcall ind_string; };
 
@@ -154,7 +162,7 @@ func lex(data []byte) []Token {
     SPATH         { EMITS(SPATH) };
     URI           { EMITS(URI) };
 
-    [ \t\r\n]+;
+    [ \t\r\n]+ & NL;
 
     SCOMMENT;
     LCOMMENT;
@@ -169,6 +177,8 @@ func lex(data []byte) []Token {
     ","           { EMITS(COMMA) };
     "("           { EMITS(LPAREN) };
     ")"           { EMITS(RPAREN) };
+    "["           { EMITS(LBRACK) };
+    "]"           { EMITS(RBRACK) };
   *|;
 
   main := |*
@@ -210,7 +220,7 @@ func lex(data []byte) []Token {
     "}"           { EMITS(RCURLY) };
     "{"           { EMITS(LCURLY) };
 
-    "''" (' '* '\n')?
+    "''" (' '* ('\n' & NL))?
                   { EMITS(IND_STRING_OPEN);
                     fcall ind_string; };
 
@@ -219,7 +229,7 @@ func lex(data []byte) []Token {
     SPATH         { EMITS(SPATH) };
     URI           { EMITS(URI) };
 
-    [ \t\r\n]+;
+    [ \t\r\n]+ & NL;
 
     SCOMMENT;
     LCOMMENT;
@@ -234,6 +244,8 @@ func lex(data []byte) []Token {
     ","           { EMITS(COMMA) };
     "("           { EMITS(LPAREN) };
     ")"           { EMITS(RPAREN) };
+    "["           { EMITS(LBRACK) };
+    "]"           { EMITS(RBRACK) };
   *|;
 
   prepush {
@@ -246,5 +258,10 @@ func lex(data []byte) []Token {
 %% write init;
 %% write exec;
 
-  return tokens
+  var err error
+	if cs < scanner_first_final {
+    err = fmt.Errorf("Unexpected token at ", lineCount+1, (p-lineStart)+1)
+  }
+
+  return tokens, err
 }

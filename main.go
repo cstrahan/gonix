@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/davecgh/go-spew/spew"
+	"time"
 )
 
 // var ex = []byte(". } http://foo.com <foo> 123 ~/a in 123.1 inter inherit ++ -> ${ ./foo/bar /** **/ ./baz # asdf\n foobar")
@@ -23,9 +23,9 @@ import (
 //var ex = []byte("foo.\"abc${bar}def\" ")
 
 //var ex = []byte(`"abc ${foo.bar {}}  baz" ''foo ''$ baz''`)
-var ex = []byte(`''
-  foo
-''`)
+//var ex = []byte(`! { a = 1; } ? a || true`)
+//var ex = []byte(`true == true -> true == true`)
+var ex = []byte(`[ a b c ]`)
 
 //var ex = []byte(`'' ''\n ''`)
 
@@ -49,23 +49,38 @@ func printTok(tok Token) string {
 func main() {
 	data := ex
 
-	log.Println("LEXING")
-	tokens := lex(ex)
-	for _, tok := range tokens {
-		fmt.Println(printTok(tok))
+	file, _ := ioutil.ReadFile("/home/cstrahan/src/nixpkgs/pkgs/top-level/all-packages.nix")
+	ex = file
+
+	start := time.Now()
+	tokens, err := lex(ex)
+	//for _, tok := range tokens {
+	//	fmt.Println(printTok(tok))
+	//}
+	if err != nil {
+		log.Fatalln(err)
 	}
+	elapsedLex := time.Since(start)
+
+	//os.Exit(0)
 
 	// synthesize some EOF tokens for the sake of lookahead
 	eof := Token{TokenType: EOF}
 	tokens = append(tokens, eof, eof, eof, eof)
 
+	start = time.Now()
 	p := parser{pos: 0, tokens: tokens, data: data}
 	expr, err := p.parseExpr()
+	_ = expr
 	if err != nil {
 		log.Fatalln("parse failed:", err)
 	}
 
-	spew.Dump(expr)
+	elapsedParse := time.Since(start)
+	fmt.Printf("lexed in %f\n", elapsedLex.Seconds())
+	fmt.Printf("parsed in %f\n", elapsedParse.Seconds())
+
+	//spew.Dump(expr)
 	//log.Println(expr)
 }
 
@@ -282,8 +297,8 @@ func (self *parser) advance(offset int) {
 	self.pos += offset
 }
 
-func unexpected() error {
-	panic("unexpected token")
+func unexpected(tok Token) error {
+	panic(fmt.Sprintf("unexpected '%v' token at %v,%v", tok.TokenType, tok.Pos.Row, tok.Pos.Col))
 	return UnexpectedToken{}
 }
 
@@ -297,7 +312,7 @@ func (self UnexpectedToken) Error() string {
 func (self *parser) mustMatch(typ TokenType, offset int) (Token, error) {
 	tok := self.tok(offset)
 	if tok.TokenType != typ {
-		return tok, unexpected()
+		return tok, unexpected(tok)
 	}
 	return tok, nil
 }
@@ -581,14 +596,12 @@ func (self *parser) parseExprIf() (Expr, error) {
 	}
 }
 
-// interesting cases:
-//   ---> ! { a = 1; } ? a || true
 func (self *parser) parseExprOp() (Expr, error) {
 	ops := []Token{}
 	exprs := []Expr{}
-	haveEq := false
-	haveImpl := false
 
+	// This is, more or less, the shunting-yard algorithm, though extended to
+	// support unary operators and non-associative binary operators.
 	for {
 		// push all unary operators
 		for {
@@ -618,32 +631,14 @@ func (self *parser) parseExprOp() (Expr, error) {
 			self.advance(1)
 			op1_ := operators[op1.TokenType]
 
-			// sanity check
-			switch op1.TokenType {
-			case EQ:
-				if haveEq {
-					return nil, unexpected()
-				}
-				haveEq = true
-			case NEQ:
-				if haveEq {
-					return nil, unexpected()
-				}
-				haveEq = true
-			case IMPL:
-				if haveImpl {
-					return nil, unexpected()
-				}
-				haveImpl = true
-			}
-
 			for len(ops) > 0 {
 				op2 := ops[len(ops)-1]
 				op2_ := operators[op2.TokenType]
-				if op1_.Assoc == ASSOC_LEFT && op1_.Prec <= op2_.Prec ||
+				if op1_.Assoc == ASSOC_NONE && op2_.Assoc == ASSOC_NONE && op1.TokenType == op2.TokenType {
+					return nil, unexpected(op1)
+				} else if (op1_.Assoc == ASSOC_LEFT || op1_.Assoc == ASSOC_NONE) && op1_.Prec <= op2_.Prec ||
 					op1_.Assoc == ASSOC_RIGHT && op1_.Prec < op2_.Prec {
 					ops = ops[:len(ops)-1] // pop op2 off stack
-					// TODO: produce/push expr
 					switch op2.TokenType {
 					case '!':
 						exprs[len(exprs)-1] = ExprOpNot{op2.Pos, exprs[len(exprs)-1]}
@@ -1040,7 +1035,7 @@ func (self *parser) parseExprSimple() (Expr, error) {
 		return list, err
 	}
 
-	return nil, unexpected()
+	return nil, unexpected(t1)
 }
 
 func (self *parser) parseStringParts() (Expr, error) {
@@ -1323,7 +1318,7 @@ func (self *parser) parseAttr() (string, error) {
 	case OR_KW:
 		return "or", nil
 	default:
-		return "", unexpected()
+		return "", unexpected(tok)
 	}
 }
 
@@ -1358,7 +1353,7 @@ func (self *parser) parseStringAttr() (Expr, error) {
 
 		return expr, err
 	default:
-		return nil, unexpected()
+		return nil, unexpected(tok)
 	}
 }
 
