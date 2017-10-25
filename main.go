@@ -11,6 +11,8 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
+var noPos = Pos{}
+
 // var ex = []byte(". } http://foo.com <foo> 123 ~/a in 123.1 inter inherit ++ -> ${ ./foo/bar /** **/ ./baz # asdf\n foobar")
 
 //var ex = []byte("1 + 2 * 3")
@@ -27,7 +29,6 @@ import (
 //var ex = []byte(`! { a = 1; } ? a || true`)
 //var ex = []byte(`true == true -> true == true`)
 //var ex = []byte(`[ a b c ]`)
-var ex = []byte(`1.2345`)
 
 //var ex = []byte(`'' ''\n ''`)
 
@@ -36,7 +37,7 @@ var ex = []byte(`1.2345`)
 // var ex = []byte("foo/bar/baz")
 // var ex = []byte("123.45 2.")
 
-// var ex = []byte("./foo/bar ./quux")
+var ex = []byte("./foo/bar")
 
 //var ex = []byte(`foo: bar`)
 
@@ -75,7 +76,7 @@ func main() {
 
 	start = time.Now()
 	p := parser{pos: 0, tokens: tokens, data: data}
-	expr, err := p.parseExpr()
+	expr, err := p.Parse()
 	_ = expr
 	if err != nil {
 		log.Fatalln("parse failed:", err)
@@ -323,6 +324,20 @@ func (self *parser) mustMatch(typ TokenType, offset int) (Token, error) {
 	return tok, nil
 }
 
+func (self *parser) Parse() (Expr, error) {
+	expr, err := self.parseExpr()
+	if err != nil {
+		return nil, err
+	}
+
+	tok := self.tok(0)
+	if tok.TokenType != EOF {
+		return nil, fmt.Errorf("Unexpected token '%s'", printTok(tok))
+	}
+
+	return expr, nil
+}
+
 func (self *parser) parseExpr() (Expr, error) {
 	return self.parseExprFunction()
 }
@@ -435,6 +450,10 @@ func (self *parser) parseExprFunction() (Expr, error) {
 
 		return ExprWith{t1.Pos, attrs, body}, nil
 	case LET:
+		if self.tok(1).TokenType == '{' {
+			goto Fallthrough
+		}
+
 		self.advance(1)
 
 		binds, err := self.parseBinds()
@@ -871,8 +890,8 @@ func (self *parser) parseExprSelect() (Expr, error) {
 		return nil, err
 	}
 
-	tok := self.tok(0)
-	switch tok.TokenType {
+	tok1 := self.tok(0)
+	switch tok1.TokenType {
 	case DOT:
 		self.advance(1)
 		path, err := self.parseAttrPath()
@@ -881,8 +900,8 @@ func (self *parser) parseExprSelect() (Expr, error) {
 		}
 
 		var def Expr
-		tok := self.tok(0)
-		if tok.TokenType == OR_KW {
+		tok2 := self.tok(0)
+		if tok2.TokenType == OR_KW {
 			self.advance(1)
 			def, err = self.parseExprSelect()
 			if err != nil {
@@ -890,10 +909,10 @@ func (self *parser) parseExprSelect() (Expr, error) {
 			}
 		}
 
-		return ExprSelect{Pos{}, simple, path, def}, nil
+		return ExprSelect{tok1.Pos, simple, path, def}, nil
 	case OR_KW:
 		self.advance(1)
-		return ExprApp{Pos{}, simple, ExprVar{tok.Pos, []byte("or")}}, nil
+		return ExprApp{tok1.Pos, simple, ExprVar{tok1.Pos, []byte("or")}}, nil
 	}
 
 	return simple, nil
@@ -976,10 +995,12 @@ func (self *parser) parseExprSimple() (Expr, error) {
 		return expr, nil
 	case LET:
 		self.advance(1)
+
 		_, err := self.mustMatch('{', 0)
 		if err != nil {
 			return nil, err
 		}
+		self.advance(1)
 
 		binds, err := self.parseBinds()
 		if err != nil {
@@ -996,7 +1017,7 @@ func (self *parser) parseExprSimple() (Expr, error) {
 		attrPath := []AttrName{
 			AttrName{Symbol: []byte("body")},
 		}
-		return ExprSelect{Pos{}, binds, attrPath, nil}, nil
+		return ExprSelect{noPos, binds, attrPath, nil}, nil
 	case REC:
 		self.advance(1)
 
@@ -1243,7 +1264,7 @@ func (self *parser) parseBinds() (ExprAttrs, error) {
 			}
 			self.advance(1)
 
-			err = addAttr(binds, attrpath, expr, Pos{})
+			err = addAttr(binds, attrpath, expr, tok.Pos)
 			if err != nil {
 				return binds, err
 			}
