@@ -66,7 +66,11 @@ func lex(data []byte) ([]Token, error) {
 
   _, _, _, _, _, _ = top, ts, te, act, eof, stack
 
-  tokens := make([]Token, 0, 0)
+  // Try to reserve enough capacity so we can avoid copying.
+  // This factor is based on lexing all-packages.nix, where we reduce our lexing
+  // time to one third compared to the naive empty slice.
+  tokens := make([]Token, 0, len(data) / 10)
+  //tokens := make([]Token, 0, 0)
   _ = tokens
 
 %%{

@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // var ex = []byte(". } http://foo.com <foo> 123 ~/a in 123.1 inter inherit ++ -> ${ ./foo/bar /** **/ ./baz # asdf\n foobar")
@@ -25,7 +26,8 @@ import (
 //var ex = []byte(`"abc ${foo.bar {}}  baz" ''foo ''$ baz''`)
 //var ex = []byte(`! { a = 1; } ? a || true`)
 //var ex = []byte(`true == true -> true == true`)
-var ex = []byte(`[ a b c ]`)
+//var ex = []byte(`[ a b c ]`)
+var ex = []byte(`1.2345`)
 
 //var ex = []byte(`'' ''\n ''`)
 
@@ -49,8 +51,8 @@ func printTok(tok Token) string {
 func main() {
 	data := ex
 
-	file, _ := ioutil.ReadFile("/home/cstrahan/src/nixpkgs/pkgs/top-level/all-packages.nix")
-	ex = file
+	//file, _ := ioutil.ReadFile("/home/cstrahan/src/nixpkgs/pkgs/top-level/all-packages.nix")
+	//ex = file
 
 	start := time.Now()
 	tokens, err := lex(ex)
@@ -62,6 +64,9 @@ func main() {
 	}
 	elapsedLex := time.Since(start)
 
+	//fmt.Printf("file size: %v\n", len(file))
+	//fmt.Printf("tokens: %v\n", len(tokens))
+	//fmt.Printf("lexed in %f\n", elapsedLex.Seconds())
 	//os.Exit(0)
 
 	// synthesize some EOF tokens for the sake of lookahead
@@ -79,8 +84,9 @@ func main() {
 	elapsedParse := time.Since(start)
 	fmt.Printf("lexed in %f\n", elapsedLex.Seconds())
 	fmt.Printf("parsed in %f\n", elapsedParse.Seconds())
+	fmt.Printf("both in %f\n", (elapsedLex + elapsedParse).Seconds())
 
-	//spew.Dump(expr)
+	spew.Dump(expr)
 	//log.Println(expr)
 }
 
@@ -832,13 +838,17 @@ func getType(myvar interface{}) string {
 }
 
 func (self *parser) parseExprApp() (Expr, error) {
+	tok := self.tok(0)
+	pos := tok.Pos
+
 	expr, err := self.parseExprSelect()
 	if err != nil {
 		return nil, err
 	}
 
 	for {
-		switch self.tok(0).TokenType {
+		tok := self.tok(0)
+		switch tok.TokenType {
 		case ID, INT, FLOAT, '"', IND_STRING_OPEN, PATH, HPATH, SPATH, URI, '(', LET, REC, '{', '[':
 
 			body, err := self.parseExprSelect()
@@ -846,7 +856,7 @@ func (self *parser) parseExprApp() (Expr, error) {
 				return nil, err
 			}
 
-			expr = ExprApp{Pos{}, expr, body}
+			expr = ExprApp{pos, expr, body}
 		default:
 			return expr, nil
 		}
@@ -904,7 +914,11 @@ func (self *parser) parseExprSimple() (Expr, error) {
 		}
 
 		return ExprInt{int(n)}, nil
-	// case FLOAT:  // TODO
+	case FLOAT:
+		self.advance(1)
+
+		val, _ := strconv.ParseFloat(string(t1.Text), 32)
+		return ExprFloat{Float: float32(val)}, nil
 	case '"':
 		self.advance(1)
 
@@ -1643,6 +1657,10 @@ type ExprInt struct {
 
 type ExprPath struct {
 	Path string
+}
+
+type ExprFloat struct {
+	Float float32
 }
 
 type ExprString struct {
