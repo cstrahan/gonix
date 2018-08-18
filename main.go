@@ -37,7 +37,11 @@ var noPos = Pos{}
 // var ex = []byte("foo/bar/baz")
 // var ex = []byte("123.45 2.")
 
-var ex = []byte("./foo/bar")
+var ex = []byte("123.456")
+
+//var ex = []byte("./foo/bar")
+
+//var ex = []byte("fooBarBaz")
 
 //var ex = []byte(`foo: bar`)
 
@@ -621,6 +625,30 @@ func (self *parser) parseExprIf() (Expr, error) {
 	}
 }
 
+var tokToBinOp = [...]BinOp{
+	EQ:     BinOpEQ,
+	NEQ:    BinOpNEQ,
+	'<':    BinOpLE,
+	LEQ:    BinOpLEQ,
+	'>':    BinOpGE,
+	GEQ:    BinOpGEQ,
+	AND:    BinOpAnd,
+	OR:     BinOpOr,
+	IMPL:   BinOpImpl,
+	UPDATE: BinOpUpdate,
+	'?':    BinOpHasAttr,
+	'+':    BinOpAdd,
+	'-':    BinOpSub,
+	'*':    BinOpMult,
+	'/':    BinOpDiv,
+	CONCAT: BinOpConcat,
+}
+
+var tokToUnOp = [...]UnOp{
+	'!':    UnOpNot,
+	NEGATE: UnOpNegate,
+}
+
 func (self *parser) parseExprOp() (Expr, error) {
 	ops := []Token{}
 	exprs := []Expr{}
@@ -665,57 +693,10 @@ func (self *parser) parseExprOp() (Expr, error) {
 					op1_.Assoc == ASSOC_RIGHT && op1_.Prec < op2_.Prec {
 					ops = ops[:len(ops)-1] // pop op2 off stack
 					switch op2.TokenType {
-					case '!':
-						exprs[len(exprs)-1] = ExprOpNot{op2.Pos, exprs[len(exprs)-1]}
-					case NEGATE:
-						exprs[len(exprs)-1] = ExprOpNegate{op2.Pos, exprs[len(exprs)-1]}
-					case EQ:
-						exprs[len(exprs)-2] = ExprOpEQ{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case NEQ:
-						exprs[len(exprs)-2] = ExprOpNEQ{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case '<':
-						exprs[len(exprs)-2] = ExprOpLE{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case LEQ:
-						exprs[len(exprs)-2] = ExprOpLEQ{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case '>':
-						exprs[len(exprs)-2] = ExprOpGE{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case GEQ:
-						exprs[len(exprs)-2] = ExprOpGEQ{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case AND:
-						exprs[len(exprs)-2] = ExprOpAnd{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case OR:
-						exprs[len(exprs)-2] = ExprOpOr{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case IMPL:
-						exprs[len(exprs)-2] = ExprOpImpl{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case UPDATE:
-						exprs[len(exprs)-2] = ExprOpUpdate{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case '?':
-						exprs[len(exprs)-2] = ExprOpHasAttr{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case '+':
-						exprs[len(exprs)-2] = ExprOpAdd{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case '-':
-						exprs[len(exprs)-2] = ExprOpSub{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case '*':
-						exprs[len(exprs)-2] = ExprOpMult{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case '/':
-						exprs[len(exprs)-2] = ExprOpDiv{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-						exprs = exprs[:len(exprs)-1]
-					case CONCAT:
-						exprs[len(exprs)-2] = ExprOpConcat{op2.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					case '!', NEGATE:
+						exprs[len(exprs)-1] = ExprUnOp{op2.Pos, tokToUnOp[op2.TokenType], exprs[len(exprs)-1]}
+					case EQ, NEQ, '<', LEQ, '>', GEQ, AND, OR, IMPL, UPDATE, '?', '+', '-', '*', '/', CONCAT:
+						exprs[len(exprs)-2] = ExprBinOp{op2.Pos, tokToBinOp[op2.TokenType], exprs[len(exprs)-2], exprs[len(exprs)-1]}
 						exprs = exprs[:len(exprs)-1]
 					}
 				} else {
@@ -732,57 +713,10 @@ func (self *parser) parseExprOp() (Expr, error) {
 				op := ops[len(ops)-1]
 				ops = ops[:len(ops)-1] // pop op off stack
 				switch op.TokenType {
-				case '!':
-					exprs[len(exprs)-1] = ExprOpNot{op.Pos, exprs[len(exprs)-1]}
-				case NEGATE:
-					exprs[len(exprs)-1] = ExprOpNegate{op.Pos, exprs[len(exprs)-1]}
-				case EQ:
-					exprs[len(exprs)-2] = ExprOpEQ{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case NEQ:
-					exprs[len(exprs)-2] = ExprOpNEQ{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case '<':
-					exprs[len(exprs)-2] = ExprOpLE{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case LEQ:
-					exprs[len(exprs)-2] = ExprOpLEQ{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case '>':
-					exprs[len(exprs)-2] = ExprOpGE{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case GEQ:
-					exprs[len(exprs)-2] = ExprOpGEQ{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case AND:
-					exprs[len(exprs)-2] = ExprOpAnd{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case OR:
-					exprs[len(exprs)-2] = ExprOpOr{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case IMPL:
-					exprs[len(exprs)-2] = ExprOpImpl{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case UPDATE:
-					exprs[len(exprs)-2] = ExprOpUpdate{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case '?':
-					exprs[len(exprs)-2] = ExprOpHasAttr{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case '+':
-					exprs[len(exprs)-2] = ExprOpAdd{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case '-':
-					exprs[len(exprs)-2] = ExprOpSub{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case '*':
-					exprs[len(exprs)-2] = ExprOpMult{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case '/':
-					exprs[len(exprs)-2] = ExprOpDiv{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
-					exprs = exprs[:len(exprs)-1]
-				case CONCAT:
-					exprs[len(exprs)-2] = ExprOpConcat{op.Pos, exprs[len(exprs)-2], exprs[len(exprs)-1]}
+				case '!', NEGATE:
+					exprs[len(exprs)-1] = ExprUnOp{op.Pos, tokToUnOp[op.TokenType], exprs[len(exprs)-1]}
+				case EQ, NEQ, '<', LEQ, '>', GEQ, AND, OR, IMPL, UPDATE, '?', '+', '-', '*', '/', CONCAT:
+					exprs[len(exprs)-2] = ExprBinOp{op.Pos, tokToBinOp[op.TokenType], exprs[len(exprs)-2], exprs[len(exprs)-1]}
 					exprs = exprs[:len(exprs)-1]
 				}
 			}
@@ -1543,110 +1477,44 @@ type ExprIf struct {
 	Else Expr
 }
 
-type ExprOpNegate struct {
+type UnOp byte
+
+const (
+	UnOpNegate UnOp = iota
+	UnOpNot
+)
+
+type ExprUnOp struct {
 	Pos
+	Type UnOp
 	Expr Expr
 }
+type BinOp byte
 
-type ExprOpNEQ struct {
+const (
+	BinOpNEQ BinOp = iota
+	BinOpEQ
+	BinOpLE
+	BinOpLEQ
+	BinOpGE
+	BinOpGEQ
+	BinOpAnd
+	BinOpOr
+	BinOpImpl
+	BinOpUpdate
+	BinOpHasAttr
+	BinOpAdd
+	BinOpSub
+	BinOpMult
+	BinOpDiv
+	BinOpConcat
+)
+
+type ExprBinOp struct {
 	Pos
+	Type  BinOp
 	Expr1 Expr
 	Expr2 Expr
-}
-
-type ExprOpEQ struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpLE struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpLEQ struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpGE struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpGEQ struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpAnd struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpOr struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpImpl struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpUpdate struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpHasAttr struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpAdd struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpSub struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpMult struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpDiv struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpConcat struct {
-	Pos
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprOpNot struct {
-	Pos
-	Expr Expr
 }
 
 type ExprApp struct {

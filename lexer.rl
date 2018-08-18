@@ -161,10 +161,10 @@ func lex(data []byte) ([]Token, error) {
                   { EMITS(IND_STRING_OPEN);
                     fcall ind_string; };
 
-    PATH          { EMITS(PATH) };
-    HPATH         { EMITS(HPATH) };
-    SPATH         { EMITS(SPATH) };
-    URI           { EMITS(URI) };
+    PATH          { EMIT_TEXT(PATH, ts, te, data[ts:te]) };
+    HPATH         { EMIT_TEXT(PATH, ts, te, data[ts:te]) };
+    SPATH         { EMIT_TEXT(PATH, ts, te, data[ts:te]) };
+    URI           { EMIT_TEXT(URI, ts, te, data[ts:te]) };
 
     [ \t\r\n]+ & NL;
 
@@ -228,10 +228,10 @@ func lex(data []byte) ([]Token, error) {
                   { EMITS(IND_STRING_OPEN);
                     fcall ind_string; };
 
-    PATH          { EMITS(PATH) };
-    HPATH         { EMITS(HPATH) };
-    SPATH         { EMITS(SPATH) };
-    URI           { EMITS(URI) };
+    PATH          { EMIT_TEXT(PATH, ts, te, data[ts:te]) };
+    HPATH         { EMIT_TEXT(PATH, ts, te, data[ts:te]) };
+    SPATH         { EMIT_TEXT(PATH, ts, te, data[ts:te]) };
+    URI           { EMIT_TEXT(URI, ts, te, data[ts:te]) };
 
     [ \t\r\n]+ & NL;
 

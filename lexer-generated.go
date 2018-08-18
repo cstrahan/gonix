@@ -917,12 +917,12 @@ func lex(data []byte) ([]Token, error) {
 		case 96:
 			{
 				p = (te) - 1
-				tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+				tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 			}
 		case 97:
 			{
 				p = (te) - 1
-				tokens = append(tokens, Token{TokenType: TokenType(HPATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+				tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 			}
 		case 103:
 			{
@@ -962,7 +962,7 @@ func lex(data []byte) ([]Token, error) {
 //line lexer.rl:233
 		te = p + 1
 		{
-			tokens = append(tokens, Token{TokenType: TokenType(SPATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 		}
 		goto st58
 	tr29:
@@ -1146,7 +1146,7 @@ func lex(data []byte) ([]Token, error) {
 		te = p
 		p--
 		{
-			tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 		}
 		goto st58
 	tr137:
@@ -1208,7 +1208,7 @@ func lex(data []byte) ([]Token, error) {
 		te = p
 		p--
 		{
-			tokens = append(tokens, Token{TokenType: TokenType(URI), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(URI), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 		}
 		goto st58
 	tr159:
@@ -1224,7 +1224,7 @@ func lex(data []byte) ([]Token, error) {
 		te = p
 		p--
 		{
-			tokens = append(tokens, Token{TokenType: TokenType(HPATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 		}
 		goto st58
 	st58:
@@ -4125,12 +4125,12 @@ func lex(data []byte) ([]Token, error) {
 		case 46:
 			{
 				p = (te) - 1
-				tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+				tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 			}
 		case 47:
 			{
 				p = (te) - 1
-				tokens = append(tokens, Token{TokenType: TokenType(HPATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+				tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 			}
 		case 53:
 			{
@@ -4170,7 +4170,7 @@ func lex(data []byte) ([]Token, error) {
 //line lexer.rl:166
 		te = p + 1
 		{
-			tokens = append(tokens, Token{TokenType: TokenType(SPATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 		}
 		goto st111
 	tr78:
@@ -4369,7 +4369,7 @@ func lex(data []byte) ([]Token, error) {
 		te = p
 		p--
 		{
-			tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 		}
 		goto st111
 	tr244:
@@ -4431,7 +4431,7 @@ func lex(data []byte) ([]Token, error) {
 		te = p
 		p--
 		{
-			tokens = append(tokens, Token{TokenType: TokenType(URI), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(URI), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 		}
 		goto st111
 	tr266:
@@ -4447,7 +4447,7 @@ func lex(data []byte) ([]Token, error) {
 		te = p
 		p--
 		{
-			tokens = append(tokens, Token{TokenType: TokenType(HPATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil})
+			tokens = append(tokens, Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]})
 		}
 		goto st111
 	st111:
