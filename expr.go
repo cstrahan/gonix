@@ -510,12 +510,116 @@ type ExprSelect struct {
 	Def      Expr
 }
 
+func getname(name AttrName, state *EvalState, env *Env) (Symbol, error) {
+	if name.Symbol != "" {
+		return name.Symbol, nil
+	} else {
+		var nameValue Value = nil
+		err := name.Expr.Eval(state, env, &nameValue)
+		if err != nil {
+			return "", err
+		}
+
+		str, err := state.ForceStringNoCtx(&nameValue, noPos)
+		if err != nil {
+			return "", err
+		}
+
+		return state.symbols.Create(str), nil
+	}
+}
+
 func (self *ExprSelect) Eval(state *EvalState, env *Env, val *Value) error {
-	panic("not implemented")
+	var tmp Value = nil
+	var attrs *Value = &tmp
+
+	pos2 := noPos
+
+	self.Expr.Eval(state, env, attrs)
+
+	var err error = nil
+
+	for _, attr := range self.AttrPath {
+		name, err := getname(attr, state, env)
+		if err != nil {
+			goto fail
+		}
+
+		if self.Def != nil {
+			state.ForceValue(attrs, self.Pos)
+
+			switch v := (*attrs).(type) {
+			case *NixAttrs:
+				bindings := (*Bindings)(v)
+				if attrs = bindings.Find(name); attrs == nil {
+					err = self.Def.Eval(state, env, val)
+					if err != nil {
+						goto fail
+					}
+					return nil
+				}
+			}
+		} else {
+			bindings, err := state.ForceAttrs(attrs, self.Pos)
+			if err != nil {
+				goto fail
+			}
+
+			if attrs = bindings.Find(name); attrs == nil {
+				panic("attribute missing")
+				// throwEvalError("attribute '%1%' missing, at %2%", name, pos);
+				goto fail
+			}
+		}
+		// pos2 = ... (todo)
+	}
+
+	if pos2 != noPos {
+		err = state.ForceValue(attrs, pos2)
+	} else {
+		err = state.ForceValue(attrs, self.Pos)
+	}
+	if err != nil {
+		goto fail
+	}
+
+	*val = *attrs
+	return nil
+
+fail:
+	panic("error while evaluating attribute")
+
+	// TODO:
+	// if (pos2 && pos2->file != state.sDerivationNix)
+	//     addErrorPrefix(e, "while evaluating the attribute '%1%' at %2%:\n",
+	//         showAttrPath(state, env, attrPath), *pos2);
 }
 
 func (self *ExprSelect) BindVars(staticEnv *StaticEnv) error {
-	panic("not implemented")
+	var err error = nil
+
+	err = self.Expr.BindVars(staticEnv)
+	if err != nil {
+		return err
+	}
+
+	if self.Def != nil {
+		err = self.Def.BindVars(staticEnv)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, attr := range self.AttrPath {
+		if attr.Symbol == "" {
+			err := attr.Expr.BindVars(staticEnv)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (self *ExprSelect) SetName(name Symbol) {}
@@ -557,12 +661,11 @@ type ExprPath struct {
 }
 
 func (self *ExprPath) Eval(state *EvalState, env *Env, val *Value) error {
-	panic("not implemented")
+	*val = *self.Value
+	return nil
 }
 
-func (self *ExprPath) BindVars(staticEnv *StaticEnv) error {
-	panic("not implemented")
-}
+func (self *ExprPath) BindVars(staticEnv *StaticEnv) error { return nil }
 
 func (self *ExprPath) SetName(name Symbol) {}
 

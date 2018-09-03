@@ -42,7 +42,10 @@ var noPos = Pos{}
 //var ex = []byte("builtins")
 //var ex = []byte("let x = 12345.0; in let y = x; in y")
 //var ex = []byte("\"blah blah\"")
-var ex = []byte("1 + 2.2 + 3")
+//var ex = []byte("1 + 2.2 + 3")
+//var ex = []byte("_foo")
+//var ex = []byte("builtins.${\"foo\"}")
+var ex = []byte("__foo")
 
 //var ex = []byte("./foo/bar")
 
@@ -139,7 +142,6 @@ func main() {
 		panic(err)
 	}
 	spew.Dump(val)
-	log.Println("%v", *(val.(*NixFloat)))
 }
 
 type parser struct {

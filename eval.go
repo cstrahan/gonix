@@ -150,6 +150,9 @@ type EvalState struct {
 func (self *EvalState) createBaseEnv() {
 	builtins := NixAttrs(make([]Attr, 128))
 	self.addConstant("builtins", &builtins)
+
+	n := NixInt(42)
+	self.addConstant("__foo", Value(&n))
 }
 
 func (self *EvalState) coerceToString(pos Pos, val Value, context [][]byte, coerceMore bool, copyToStore bool) string {
@@ -216,6 +219,89 @@ func (self *EvalState) EvalAttrs(env *Env, expr Expr, val *Value) error {
 
 func (self *EvalState) Eval(expr Expr, val *Value) error {
 	return expr.Eval(self, self.baseEnv, val)
+}
+
+func (self *EvalState) ForceAttrs(val *Value, pos Pos) (Bindings, error) {
+	err := self.ForceValue(val, pos)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := (*val).(type) {
+	case *NixAttrs:
+		return (Bindings)(*v), nil
+	default:
+		if pos != noPos {
+			panic("attrs was expected")
+			// throwTypeError("value is %1% while a set was expected, at %2%", v, pos);
+		} else {
+			panic("attrs was expected")
+			// throwTypeError("value is %1% while a set was expected", v);
+		}
+	}
+
+	return nil, nil
+}
+
+func (self *EvalState) ForceString(val *Value, pos Pos) (string, error) {
+	err := self.ForceValue(val, pos)
+	if err != nil {
+		return "", err
+	}
+
+	switch v := (*val).(type) {
+	case *NixString:
+		return string(v.String), nil
+	default:
+		if pos != noPos {
+			panic("string was expected")
+			// throwTypeError("value is %1% while a string was expected, at %2%", v, pos);
+		} else {
+			panic("string was expected")
+			// throwTypeError("value is %1% while a string was expected", v);
+		}
+	}
+
+	return "", nil
+}
+
+func copyContext(val Value, context *[][]byte) {
+	from := val.(*NixString).Context
+	if from != nil {
+		for _, path := range from {
+			*context = append(*context, path)
+		}
+	}
+}
+
+func (self *EvalState) ForceStringWithCtx(val *Value, context [][]byte, pos Pos) (string, error) {
+	str, err := self.ForceString(val, pos)
+	if err != nil {
+		return "", err
+	}
+	copyContext(*val, &context)
+	return str, nil
+}
+
+func (self *EvalState) ForceStringNoCtx(val *Value, pos Pos) (string, error) {
+	str, err := self.ForceString(val, pos)
+	if err != nil {
+		return "", err
+	}
+
+	if (*val).(*NixString).Context != nil {
+		if pos != noPos {
+			panic("not allowed to refer to a store path")
+			//throwEvalError("the string '%1%' is not allowed to refer to a store path (such as '%2%'), at %3%",
+			//    v.string.s, v.string.context[0], pos);
+		} else {
+			panic("not allowed to refer to a store path")
+			//throwEvalError("the string '%1%' is not allowed to refer to a store path (such as '%2%')",
+			//    v.string.s, v.string.context[0]);
+		}
+	}
+
+	return str, nil
 }
 
 func (self *EvalState) ForceValue(val *Value, pos Pos) error {
