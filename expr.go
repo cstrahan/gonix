@@ -743,11 +743,30 @@ type ExprList struct {
 }
 
 func (self *ExprList) Eval(state *EvalState, env *Env, val *Value) error {
-	panic("not implemented")
+	list := make([]Value, len(self.Elems))
+
+	for idx, elem := range self.Elems {
+		val, err := elem.MaybeThunk(state, env)
+		if err != nil {
+			return err
+		}
+
+		list[idx] = *val
+	}
+
+	*val = (*NixList)(&list)
+
+	return nil
 }
 
 func (self *ExprList) BindVars(staticEnv *StaticEnv) error {
-	panic("not implemented")
+	for _, elem := range self.Elems {
+		err := elem.BindVars(staticEnv)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (self *ExprList) SetName(name Symbol) {}

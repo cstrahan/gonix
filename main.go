@@ -45,7 +45,7 @@ var noPos = Pos{}
 //var ex = []byte("1 + 2.2 + 3")
 //var ex = []byte("_foo")
 //var ex = []byte("builtins.${\"foo\"}")
-var ex = []byte("__foo")
+var ex = []byte("[ 1 2 2 ]")
 
 //var ex = []byte("./foo/bar")
 
