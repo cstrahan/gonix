@@ -37,7 +37,12 @@ var noPos = Pos{}
 // var ex = []byte("foo/bar/baz")
 // var ex = []byte("123.45 2.")
 
-var ex = []byte("123.456")
+//var ex = []byte("123.456")
+//var ex = []byte("12345")
+//var ex = []byte("builtins")
+//var ex = []byte("let x = 12345.0; in let y = x; in y")
+//var ex = []byte("\"blah blah\"")
+var ex = []byte("1 + 2.2 + 3")
 
 //var ex = []byte("./foo/bar")
 
@@ -54,10 +59,12 @@ func printTok(tok Token) string {
 //}
 
 func main() {
-	data := ex
-
 	//file, _ := ioutil.ReadFile("/home/cstrahan/src/nixpkgs/pkgs/top-level/all-packages.nix")
 	//ex = file
+
+	symbols := SymbolTable{symbols: map[string]string{}}
+
+	data := ex
 
 	start := time.Now()
 	tokens, err := lex(ex)
@@ -79,7 +86,7 @@ func main() {
 	tokens = append(tokens, eof, eof, eof, eof)
 
 	start = time.Now()
-	p := parser{pos: 0, tokens: tokens, data: data}
+	p := parser{pos: 0, tokens: tokens, data: data, symbols: symbols}
 	expr, err := p.Parse()
 	_ = expr
 	if err != nil {
@@ -91,14 +98,55 @@ func main() {
 	fmt.Printf("parsed in %f\n", elapsedParse.Seconds())
 	fmt.Printf("both in %f\n", (elapsedLex + elapsedParse).Seconds())
 
-	spew.Dump(expr)
+	//spew.Dump(expr)
 	//log.Println(expr)
+
+	state := &EvalState{
+		baseEnvDispl: 0,
+		baseEnv: &Env{
+			up:       nil,
+			prevWith: 0,
+			kind:     EnvPlain,
+			values:   []Value{},
+		},
+		staticBaseEnv: &StaticEnv{
+			up:     nil,
+			isWith: false,
+			vars:   map[Symbol]uint{},
+		},
+		symbols: symbols,
+	}
+	state.createBaseEnv()
+
+	err = expr.BindVars(state.staticBaseEnv)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var val Value = nil
+
+	err = state.Eval(expr, &val)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(">> UNFORCED:")
+	spew.Dump(val)
+
+	fmt.Println(">> FORCED:")
+	err = state.ForceValue(&val, noPos)
+	if err != nil {
+		panic(err)
+	}
+	spew.Dump(val)
+	log.Println("%v", *(val.(*NixFloat)))
 }
 
 type parser struct {
-	pos    int
-	tokens []Token
-	data   []byte
+	pos     int
+	tokens  []Token
+	data    []byte
+	symbols SymbolTable
 }
 
 func showAttrPath(attrPath []AttrName) string {
@@ -130,12 +178,12 @@ func dupAttrSym(attr Symbol, pos Pos, prevPos Pos) error {
 	return fmt.Errorf("attribute ‘%s’ at %s already defined at %s", attr, pos, prevPos)
 }
 
-func addAttr(attrs ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
+func addAttr(attrs *ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
 	for _, attr := range attrPath[:len(attrPath)-1] {
 		if attr.Expr == nil {
 			if existing, ok := attrs.AttrDefs[string(attr.Symbol)]; ok {
 				if !existing.Inherited {
-					if prevAttrs, ok := existing.Expr.(ExprAttrs); ok {
+					if prevAttrs, ok := existing.Expr.(*ExprAttrs); ok {
 						attrs = prevAttrs
 					} else {
 						return dupAttrPath(attrPath, pos, existing.Pos)
@@ -144,7 +192,7 @@ func addAttr(attrs ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
 					return dupAttrPath(attrPath, pos, existing.Pos)
 				}
 			} else {
-				nested := ExprAttrs{
+				nested := &ExprAttrs{
 					AttrDefs:        map[string]AttrDef{},
 					DynamicAttrDefs: map[string]DynamicAttrDef{},
 				}
@@ -155,7 +203,7 @@ func addAttr(attrs ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
 				attrs = nested
 			}
 		} else {
-			nested := ExprAttrs{
+			nested := &ExprAttrs{
 				AttrDefs:        map[string]AttrDef{},
 				DynamicAttrDefs: map[string]DynamicAttrDef{},
 			}
@@ -184,6 +232,10 @@ func addAttr(attrs ExprAttrs, attrPath []AttrName, expr Expr, pos Pos) error {
 	return nil
 }
 
+func exprPtr(expr Expr) *Expr {
+	return &expr
+}
+
 func addFormal(pos Pos, formals *Formals, formal Formal) error {
 	if _, ok := formals.ArgNames[string(formal.Name)]; ok {
 		return fmt.Errorf("duplicate formal function argument ‘%s’ at %s", formal.Name, pos)
@@ -194,9 +246,22 @@ func addFormal(pos Pos, formals *Formals, formal Formal) error {
 	return nil
 }
 
-func stripIndentation(pos Pos, exprs []Expr) Expr {
+func (self *parser) copyString(content []byte) *ExprString {
+	sym := self.symbols.Create(string(content))
+	var sval Value = &NixString{
+		String:  []byte(sym),
+		Context: nil,
+	}
+
+	return &ExprString{
+		String: sym,
+		Value:  &sval,
+	}
+}
+
+func (self *parser) stripIndentation(pos Pos, exprs []Expr) Expr {
 	if len(exprs) == 0 {
-		return ExprString{[]byte("")}
+		return self.copyString([]byte{})
 	}
 
 	atStartOfLine := true
@@ -205,7 +270,7 @@ func stripIndentation(pos Pos, exprs []Expr) Expr {
 
 	// Figure out minimum indentation.
 	for _, expr := range exprs {
-		e, ok := expr.(exprIndStr)
+		e, ok := expr.(*exprIndStr)
 		if !ok {
 			// Anti-quotations end the current start-of-line whitespace.
 			if atStartOfLine {
@@ -240,7 +305,7 @@ func stripIndentation(pos Pos, exprs []Expr) Expr {
 	atStartOfLine = true
 	curDropped := 0
 	for n, i := range exprs {
-		e, ok := i.(exprIndStr)
+		e, ok := i.(*exprIndStr)
 		if !ok {
 			atStartOfLine = false
 			curDropped = 0
@@ -287,17 +352,17 @@ func stripIndentation(pos Pos, exprs []Expr) Expr {
 		}
 
 	Done:
-		exprs2 = append(exprs2, ExprString{String: []byte(str2)})
+		exprs2 = append(exprs2, &ExprString{String: self.symbols.Create(str2)})
 	}
 
 	// If this is a single string, then don't do a concatenation.
 	if len(exprs2) == 1 {
-		if e, ok := exprs2[0].(ExprString); ok {
+		if e, ok := exprs2[0].(*ExprString); ok {
 			return e
 		}
 	}
 
-	return ExprConcatStrings{Exprs: exprs2, ForceString: true}
+	return &ExprConcatStrings{Exprs: exprs2, ForceString: true}
 }
 
 func (self *parser) tok(offset int) Token {
@@ -362,9 +427,9 @@ func (self *parser) parseExprFunction() (Expr, error) {
 				return nil, err
 			}
 
-			lambda := ExprLambda{
+			lambda := &ExprLambda{
 				Pos:        t1.Pos,
-				Name:       t1.Text,
+				Name:       self.symbols.Create(string(t1.Text)),
 				MatchAttrs: false,
 				Formals:    Formals{Formals: []Formal{}, ArgNames: map[string]struct{}{}},
 				Body:       body,
@@ -401,9 +466,9 @@ func (self *parser) parseExprFunction() (Expr, error) {
 				return nil, err
 			}
 
-			lambda := ExprLambda{
+			lambda := &ExprLambda{
 				Pos:        t1.Pos,
-				Name:       t1.Text,
+				Name:       self.symbols.Create(string(t1.Text)),
 				MatchAttrs: true,
 				Formals:    formals,
 				Body:       body,
@@ -431,7 +496,7 @@ func (self *parser) parseExprFunction() (Expr, error) {
 			return nil, err
 		}
 
-		return ExprAssert{t1.Pos, cond, body}, nil
+		return &ExprAssert{t1.Pos, cond, body}, nil
 	case WITH:
 		self.advance(1)
 
@@ -452,7 +517,7 @@ func (self *parser) parseExprFunction() (Expr, error) {
 			return nil, err
 		}
 
-		return ExprWith{t1.Pos, attrs, body}, nil
+		return &ExprWith{t1.Pos, attrs, body}, nil
 	case LET:
 		if self.tok(1).TokenType == '{' {
 			goto Fallthrough
@@ -481,7 +546,7 @@ func (self *parser) parseExprFunction() (Expr, error) {
 			return nil, err
 		}
 
-		return ExprLet{t1.Pos, binds, body}, nil
+		return &ExprLet{t1.Pos, binds, body}, nil
 	case LCURLY:
 		if !self.isFunctionWithFormals() {
 			goto Fallthrough
@@ -516,9 +581,9 @@ func (self *parser) parseExprFunction() (Expr, error) {
 				return nil, err
 			}
 
-			lambda := ExprLambda{
+			lambda := &ExprLambda{
 				Pos:        t1.Pos,
-				Name:       nameTok.Text,
+				Name:       self.symbols.Create(string(nameTok.Text)),
 				MatchAttrs: true,
 				Formals:    formals,
 				Body:       body,
@@ -533,9 +598,9 @@ func (self *parser) parseExprFunction() (Expr, error) {
 				return nil, err
 			}
 
-			lambda := ExprLambda{
+			lambda := &ExprLambda{
 				Pos:        t1.Pos,
-				Name:       []byte{},
+				Name:       "",
 				MatchAttrs: true,
 				Formals:    formals,
 				Body:       body,
@@ -619,7 +684,7 @@ func (self *parser) parseExprIf() (Expr, error) {
 			return nil, err
 		}
 
-		return ExprIf{t1.Pos, cond, then, els}, nil
+		return &ExprIf{t1.Pos, cond, then, els}, nil
 	} else {
 		return self.parseExprOp()
 	}
@@ -637,7 +702,6 @@ var tokToBinOp = [...]BinOp{
 	IMPL:   BinOpImpl,
 	UPDATE: BinOpUpdate,
 	'?':    BinOpHasAttr,
-	'+':    BinOpAdd,
 	'-':    BinOpSub,
 	'*':    BinOpMult,
 	'/':    BinOpDiv,
@@ -694,9 +758,18 @@ func (self *parser) parseExprOp() (Expr, error) {
 					ops = ops[:len(ops)-1] // pop op2 off stack
 					switch op2.TokenType {
 					case '!', NEGATE:
-						exprs[len(exprs)-1] = ExprUnOp{op2.Pos, tokToUnOp[op2.TokenType], exprs[len(exprs)-1]}
-					case EQ, NEQ, '<', LEQ, '>', GEQ, AND, OR, IMPL, UPDATE, '?', '+', '-', '*', '/', CONCAT:
-						exprs[len(exprs)-2] = ExprBinOp{op2.Pos, tokToBinOp[op2.TokenType], exprs[len(exprs)-2], exprs[len(exprs)-1]}
+						exprs[len(exprs)-1] = &ExprUnOp{op2.Pos, tokToUnOp[op2.TokenType], exprs[len(exprs)-1]}
+					case '+':
+						exprs[len(exprs)-2] = &ExprConcatStrings{
+							Exprs: []Expr{
+								exprs[len(exprs)-2],
+								exprs[len(exprs)-1],
+							},
+							ForceString: false,
+						}
+						exprs = exprs[:len(exprs)-1]
+					case EQ, NEQ, '<', LEQ, '>', GEQ, AND, OR, IMPL, UPDATE, '?', '-', '*', '/', CONCAT:
+						exprs[len(exprs)-2] = &ExprBinOp{op2.Pos, tokToBinOp[op2.TokenType], exprs[len(exprs)-2], exprs[len(exprs)-1]}
 						exprs = exprs[:len(exprs)-1]
 					}
 				} else {
@@ -714,9 +787,18 @@ func (self *parser) parseExprOp() (Expr, error) {
 				ops = ops[:len(ops)-1] // pop op off stack
 				switch op.TokenType {
 				case '!', NEGATE:
-					exprs[len(exprs)-1] = ExprUnOp{op.Pos, tokToUnOp[op.TokenType], exprs[len(exprs)-1]}
-				case EQ, NEQ, '<', LEQ, '>', GEQ, AND, OR, IMPL, UPDATE, '?', '+', '-', '*', '/', CONCAT:
-					exprs[len(exprs)-2] = ExprBinOp{op.Pos, tokToBinOp[op.TokenType], exprs[len(exprs)-2], exprs[len(exprs)-1]}
+					exprs[len(exprs)-1] = &ExprUnOp{op.Pos, tokToUnOp[op.TokenType], exprs[len(exprs)-1]}
+				case '+':
+					exprs[len(exprs)-2] = &ExprConcatStrings{
+						Exprs: []Expr{
+							exprs[len(exprs)-2],
+							exprs[len(exprs)-1],
+						},
+						ForceString: false,
+					}
+					exprs = exprs[:len(exprs)-1]
+				case EQ, NEQ, '<', LEQ, '>', GEQ, AND, OR, IMPL, UPDATE, '?', '-', '*', '/', CONCAT:
+					exprs[len(exprs)-2] = &ExprBinOp{op.Pos, tokToBinOp[op.TokenType], exprs[len(exprs)-2], exprs[len(exprs)-1]}
 					exprs = exprs[:len(exprs)-1]
 				}
 			}
@@ -809,7 +891,7 @@ func (self *parser) parseExprApp() (Expr, error) {
 				return nil, err
 			}
 
-			expr = ExprApp{pos, expr, body}
+			expr = &ExprApp{pos, expr, body}
 		default:
 			return expr, nil
 		}
@@ -843,10 +925,10 @@ func (self *parser) parseExprSelect() (Expr, error) {
 			}
 		}
 
-		return ExprSelect{tok1.Pos, simple, path, def}, nil
+		return &ExprSelect{tok1.Pos, simple, path, def}, nil
 	case OR_KW:
 		self.advance(1)
-		return ExprApp{tok1.Pos, simple, ExprVar{tok1.Pos, []byte("or")}}, nil
+		return &ExprApp{tok1.Pos, simple, &ExprVar{tok1.Pos, self.symbols.Create("or"), false, 0, 0}}, nil
 	}
 
 	return simple, nil
@@ -857,7 +939,7 @@ func (self *parser) parseExprSimple() (Expr, error) {
 	switch t1.TokenType {
 	case ID:
 		self.advance(1)
-		return ExprVar{t1.Pos, t1.Text}, nil
+		return &ExprVar{t1.Pos, self.symbols.Create(string(t1.Text)), false, 0, 0}, nil
 	case INT:
 		self.advance(1)
 
@@ -866,12 +948,14 @@ func (self *parser) parseExprSimple() (Expr, error) {
 			return nil, err
 		}
 
-		return ExprInt{int(n)}, nil
+		var val Value = (*NixInt)(&n)
+		return &ExprInt{&val, n}, nil
 	case FLOAT:
 		self.advance(1)
 
-		val, _ := strconv.ParseFloat(string(t1.Text), 32)
-		return ExprFloat{Float: float32(val)}, nil
+		n, _ := strconv.ParseFloat(string(t1.Text), 64)
+		var val Value = (*NixFloat)(&n)
+		return &ExprFloat{&val, n}, nil
 	case '"':
 		self.advance(1)
 
@@ -899,19 +983,25 @@ func (self *parser) parseExprSimple() (Expr, error) {
 		}
 		self.advance(1)
 
-		return stripIndentation(t1.Pos, stringParts), nil
+		return self.stripIndentation(t1.Pos, stringParts), nil
 	case PATH:
 		self.advance(1)
-		return ExprPath{string(t1.Text)}, nil
+		path := NixPath(t1.Text)
+		var val Value = &path
+		return &ExprPath{&val, string(t1.Text)}, nil
 	case HPATH:
 		self.advance(1)
-		return ExprPath{string(t1.Text)}, nil
+		path := NixPath(t1.Text)
+		var val Value = &path
+		return &ExprPath{&val, string(t1.Text)}, nil
 	case SPATH:
 		self.advance(1)
-		return ExprPath{string(t1.Text)}, nil
+		path := NixPath(t1.Text)
+		var val Value = &path
+		return &ExprPath{&val, string(t1.Text)}, nil
 	case URI:
 		self.advance(1)
-		return ExprString{t1.Text}, nil
+		return self.copyString(t1.Text), nil
 	case '(':
 		self.advance(1)
 
@@ -949,9 +1039,9 @@ func (self *parser) parseExprSimple() (Expr, error) {
 
 		binds.Recursive = true
 		attrPath := []AttrName{
-			AttrName{Symbol: []byte("body")},
+			AttrName{Symbol: self.symbols.Create("body")},
 		}
-		return ExprSelect{noPos, binds, attrPath, nil}, nil
+		return &ExprSelect{noPos, binds, attrPath, nil}, nil
 	case REC:
 		self.advance(1)
 
@@ -1017,8 +1107,7 @@ func (self *parser) parseStringParts() (Expr, error) {
 	// elsewhere.
 	if t2 := self.tok(1); tok.TokenType == STR && t2.TokenType == '"' {
 		self.advance(1)
-		str := ExprString{[]byte(tok.Text)}
-		return str, nil
+		return self.copyString(tok.Text), nil
 	}
 
 	for {
@@ -1026,7 +1115,7 @@ func (self *parser) parseStringParts() (Expr, error) {
 		case STR:
 			self.advance(1)
 
-			str := ExprString{tok.Text}
+			str := self.copyString(tok.Text)
 			parts = append(parts, str)
 		case DOLLAR_CURLY:
 			self.advance(1)
@@ -1050,7 +1139,7 @@ func (self *parser) parseStringParts() (Expr, error) {
 	}
 
 Break:
-	concatExpr := ExprConcatStrings{Exprs: parts, ForceString: true}
+	concatExpr := &ExprConcatStrings{Exprs: parts, ForceString: true}
 	return concatExpr, nil
 }
 
@@ -1064,7 +1153,7 @@ func (self *parser) parseIndStringParts() ([]Expr, error) {
 		case IND_STR:
 			self.advance(1)
 
-			str := exprIndStr{String: tok.Text}
+			str := &exprIndStr{String: tok.Text}
 			parts = append(parts, str)
 		case DOLLAR_CURLY:
 			self.advance(1)
@@ -1091,8 +1180,8 @@ Break:
 	return parts, nil
 }
 
-func (self *parser) parseBinds() (ExprAttrs, error) {
-	binds := ExprAttrs{
+func (self *parser) parseBinds() (*ExprAttrs, error) {
+	binds := &ExprAttrs{
 		AttrDefs:        map[string]AttrDef{},
 		DynamicAttrDefs: map[string]DynamicAttrDef{},
 	}
@@ -1143,7 +1232,7 @@ func (self *parser) parseBinds() (ExprAttrs, error) {
 					}
 
 					binds.AttrDefs[string(attr.Symbol)] = AttrDef{
-						Expr: ExprSelect{
+						Expr: &ExprSelect{
 							Expr:     expr,
 							AttrPath: []AttrName{AttrName{Symbol: attr.Symbol}},
 						},
@@ -1168,7 +1257,7 @@ func (self *parser) parseBinds() (ExprAttrs, error) {
 					}
 
 					binds.AttrDefs[string(attr.Symbol)] = AttrDef{
-						Expr: ExprVar{
+						Expr: &ExprVar{
 							Name: attr.Symbol,
 						},
 						Inherited: true,
@@ -1228,7 +1317,7 @@ func (self *parser) parseAttrs() ([]AttrName, error) {
 				return nil, err
 			}
 
-			if str, ok := strExpr.(ExprString); ok {
+			if str, ok := strExpr.(*ExprString); ok {
 				attrs = append(attrs, AttrName{Symbol: Symbol(str.String)})
 			} else {
 				return nil, fmt.Errorf("dynamic attributes not allowed in inherit at %s", "???")
@@ -1261,7 +1350,7 @@ func (self *parser) parseAttrPath() ([]AttrName, error) {
 				return nil, err
 			}
 
-			if str, ok := strExpr.(ExprString); ok {
+			if str, ok := strExpr.(*ExprString); ok {
 				attrs = append(attrs, AttrName{Symbol: Symbol(str.String)})
 			} else {
 				attrs = append(attrs, AttrName{Expr: strExpr})
@@ -1326,7 +1415,7 @@ func (self *parser) parseStringAttr() (Expr, error) {
 	}
 }
 
-func (self *parser) parseExprList() (ExprList, error) {
+func (self *parser) parseExprList() (*ExprList, error) {
 	elems := []Expr{}
 	tok := self.tok(0)
 
@@ -1337,7 +1426,7 @@ func (self *parser) parseExprList() (ExprList, error) {
 
 		elem, err := self.parseExprSelect()
 		if err != nil {
-			return ExprList{}, err
+			return &ExprList{}, err
 		}
 
 		elems = append(elems, elem)
@@ -1345,7 +1434,7 @@ func (self *parser) parseExprList() (ExprList, error) {
 		tok = self.tok(0)
 	}
 
-	return ExprList{Elems: elems}, nil
+	return &ExprList{Elems: elems}, nil
 }
 
 func (self *parser) parseFormals() (Formals, error) {
@@ -1399,193 +1488,8 @@ func (self *parser) parseFormal() (Formal, error) {
 			return Formal{}, err
 		}
 
-		return Formal{Name: tokId.Text, Def: expr}, nil
+		return Formal{Name: self.symbols.Create(string(tokId.Text)), Def: expr}, nil
 	} else {
-		return Formal{Name: tokId.Text, Def: nil}, nil
+		return Formal{Name: self.symbols.Create(string(tokId.Text)), Def: nil}, nil
 	}
 }
-
-type Symbol []byte
-
-type Expr interface{}
-
-type Formals struct {
-	Formals  []Formal
-	ArgNames map[string]struct{}
-	Ellipsis bool
-}
-
-type Formal struct {
-	Name Symbol
-	Def  Expr
-}
-
-type ExprConcatStrings struct {
-	ForceString bool
-	Exprs       []Expr
-}
-
-type ExprAttrs struct {
-	Recursive       bool
-	AttrDefs        map[string]AttrDef
-	DynamicAttrDefs map[string]DynamicAttrDef
-}
-
-type AttrDef struct {
-	Pos       Pos
-	Inherited bool
-	Expr      Expr
-	//Displacement int
-}
-
-type DynamicAttrDef struct {
-	//Pos Pos
-	NameExpr  Expr
-	ValueExpr Expr
-}
-
-type ExprLambda struct {
-	Pos
-	Name       Symbol
-	MatchAttrs bool
-	Formals    Formals
-	Body       Expr
-}
-
-type ExprAssert struct {
-	Pos
-	Cond Expr
-	Body Expr
-}
-
-type ExprWith struct {
-	Pos
-	Attrs Expr
-	Body  Expr
-}
-
-type ExprLet struct {
-	Pos
-	Attrs ExprAttrs
-	Body  Expr
-}
-
-type ExprIf struct {
-	Pos
-	Cond Expr
-	Then Expr
-	Else Expr
-}
-
-type UnOp byte
-
-const (
-	UnOpNegate UnOp = iota
-	UnOpNot
-)
-
-type ExprUnOp struct {
-	Pos
-	Type UnOp
-	Expr Expr
-}
-type BinOp byte
-
-const (
-	BinOpNEQ BinOp = iota
-	BinOpEQ
-	BinOpLE
-	BinOpLEQ
-	BinOpGE
-	BinOpGEQ
-	BinOpAnd
-	BinOpOr
-	BinOpImpl
-	BinOpUpdate
-	BinOpHasAttr
-	BinOpAdd
-	BinOpSub
-	BinOpMult
-	BinOpDiv
-	BinOpConcat
-)
-
-type ExprBinOp struct {
-	Pos
-	Type  BinOp
-	Expr1 Expr
-	Expr2 Expr
-}
-
-type ExprApp struct {
-	Pos
-	Fun Expr
-	Arg Expr
-}
-
-type ExprVar struct {
-	Pos
-	Name Symbol
-}
-
-type ExprSelect struct {
-	Pos
-	Expr     Expr
-	AttrPath []AttrName
-	Def      Expr
-}
-
-type AttrName struct {
-	Symbol Symbol
-	Expr   Expr
-}
-
-type ExprInt struct {
-	Val int
-}
-
-type ExprPath struct {
-	Path string
-}
-
-type ExprFloat struct {
-	Float float32
-}
-
-type ExprString struct {
-	String []byte
-}
-
-// Temporary structure during parse.
-type exprIndStr struct {
-	String []byte
-}
-
-type ExprList struct {
-	Elems []Expr
-}
-
-type ExprPos struct {
-	Pos Pos
-}
-
-//--------------------------------
-
-//type Position struct {
-//	Filename string // filename, if any
-//	Offset   int    // offset, starting at 0
-//	Line     int    // line number, starting at 1
-//	Column   int    // column number, starting at 1 (byte count)
-//}
-// IsValid reports whether the position is valid.
-//func (pos *Position) IsValid() bool { return pos.Line > 0 }
-
-//type Token struct {
-//	TokenType TokenType
-//	Start     int
-//	End       int
-//	Text      []byte
-//}
-
-//--------------------------------
-// EXPRS
