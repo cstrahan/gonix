@@ -116,15 +116,35 @@ func (self *Bindings) Add(name Symbol, val *Value) {
 	*self = append([]Attr(*self), Attr{name: name, value: val})
 }
 
-func (self Bindings) Find(name Symbol) *Value {
+func (self *Bindings) Get(displ uint) Attr {
+	return ([]Attr)(*self)[:cap(*self)][displ]
+}
+
+func (self *Bindings) Set(displ uint, attr Attr) {
+	([]Attr)(*self)[:cap(*self)][displ] = attr
+}
+
+func (self *Bindings) Size() int {
+	return len([]Attr(*self))
+}
+
+func (self *Bindings) Attrs() []Attr {
+	return []Attr(*self)
+}
+
+func (self *Bindings) Find(name Symbol) *Value {
 	// TODO: make this more efficient
-	for _, kv := range self {
+	for _, kv := range *self {
 		if string(kv.name) == string(name) {
 			return kv.value
 		}
 	}
 
 	return nil
+}
+
+func (self *Bindings) Sort() {
+	// TODO
 }
 
 type SymbolTable struct {
@@ -148,11 +168,17 @@ type EvalState struct {
 }
 
 func (self *EvalState) createBaseEnv() {
-	builtins := NixAttrs(make([]Attr, 128))
+	builtins := NixAttrs(make([]Attr, 0, 128))
 	self.addConstant("builtins", &builtins)
 
-	n := NixInt(42)
-	self.addConstant("__foo", Value(&n))
+	true_ := NixBool(true)
+	self.addConstant("true", Value(&true_))
+
+	false_ := NixBool(false)
+	self.addConstant("false", Value(&false_))
+
+	null := Null{}
+	self.addConstant("false", Value(&null))
 }
 
 func (self *EvalState) coerceToString(pos Pos, val Value, context [][]byte, coerceMore bool, copyToStore bool) string {
@@ -188,7 +214,7 @@ func (self *EvalState) lookupVar(env *Env, variable *ExprVar, noEval bool) (*Val
 			env.kind = EnvHasWithAttrs
 		}
 
-		val := Bindings(env.values[0].(NixAttrs)).Find(variable.Name)
+		val := (*Bindings)(env.values[0].(*NixAttrs)).Find(variable.Name)
 		if val != nil {
 			return val, nil
 		}
@@ -331,6 +357,7 @@ func (self *EvalState) callFunction(left Expr, right Expr, val *Value, pos Pos) 
 
 func (self *EvalState) addConstant(name string, v Value) {
 	self.staticBaseEnv.vars[self.symbols.Create(name)] = self.baseEnvDispl
+	//self.baseEnv.values[self.baseEnvDispl] = v
 	self.baseEnv.values = append(self.baseEnv.values, v)
 	self.baseEnvDispl += 1
 

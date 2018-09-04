@@ -45,7 +45,9 @@ var noPos = Pos{}
 //var ex = []byte("1 + 2.2 + 3")
 //var ex = []byte("_foo")
 //var ex = []byte("builtins.${\"foo\"}")
-var ex = []byte("[ 1 2 2 ]")
+//var ex = []byte("[ 1 2 2 ]")
+//var ex = []byte("rec { a = 123; b = a+a; }")
+var ex = []byte("(rec { f = 777; a = 10; b = 20; c = 30; d = 40; e = c+1; __overrides = { c = 31; f = 42; }; }).f")
 
 //var ex = []byte("./foo/bar")
 
@@ -126,6 +128,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	//spew.Dump(expr)
+	//os.Exit(0)
+
 	var val Value = nil
 
 	err = state.Eval(expr, &val)
@@ -134,7 +139,7 @@ func main() {
 	}
 
 	fmt.Println(">> UNFORCED:")
-	spew.Dump(val)
+	//spew.Dump(val)
 
 	fmt.Println(">> FORCED:")
 	err = state.ForceValue(&val, noPos)

@@ -119,11 +119,200 @@ type ExprAttrs struct {
 }
 
 func (self *ExprAttrs) Eval(state *EvalState, env *Env, val *Value) error {
-	panic("not implemented")
+	var err error = nil
+	attrBindings := Bindings(make([]Attr, 0, len(self.AttrDefs)+len(self.DynamicAttrDefs)))
+	dynamicEnv := env
+
+	if self.Recursive {
+		// Create a new environment that contains the attributes in
+		// this `rec'.
+		env2 := &Env{
+			up:       env,
+			prevWith: 0,
+			kind:     EnvPlain,
+			values:   make([]Value, len(self.AttrDefs)),
+		}
+		dynamicEnv = env2
+
+		overrides, hasOverrides := self.AttrDefs["__overrides"]
+
+		// The recursive attributes are evaluated in the new
+		// environment, while the inherited attributes are evaluated
+		// in the original environment.
+
+		// cstrahan: note, this is slightly different than in official nix:
+		// here we choose to use exactly the same displacement as the original
+		// attribute definition, as opposed starting from zero and incrementing.
+		// we do this so that the resolution of __overrides via displacement works
+		// below. the iteration order for Go maps is randomized, so this avoids
+		// problems for us later on.
+		// TODO: I should probably watch out for other iteration order sensitive
+		// code.
+		attrBindings = attrBindings[:len(self.AttrDefs)]
+		for name, attr := range self.AttrDefs {
+			var tmp Value = nil
+			var vattr *Value = &tmp
+			if hasOverrides && !attr.Inherited {
+				*vattr = &Thunk{
+					Env:  env2,
+					Expr: attr.Expr,
+				}
+			} else {
+				if attr.Inherited {
+					vattr, err = attr.Expr.MaybeThunk(state, env)
+					if err != nil {
+						return err
+					}
+				} else {
+					vattr, err = attr.Expr.MaybeThunk(state, env2)
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			env2.values[attr.Displ] = *vattr
+			attrBindings.Set(attr.Displ, Attr{
+				name:  Symbol(name),
+				value: vattr,
+			})
+		}
+
+		// If the rec contains an attribute called `__overrides', then
+		// evaluate it, and add the attributes in that set to the rec.
+		// This allows overriding of recursive attributes, which is
+		// otherwise not possible.  (You can use the // operator to
+		// replace an attribute, but other attributes in the rec will
+		// still reference the original value, because that value has
+		// been substituted into the bodies of the other attributes.
+		// Hence we need __overrides.)
+		if hasOverrides {
+			vOverrides := attrBindings.Get(overrides.Displ).value
+			overridesBindings, err := state.ForceAttrs(vOverrides, noPos)
+			if err != nil {
+				return err
+			}
+
+			newBnds := Bindings(make([]Attr, 0, attrBindings.Size()+overridesBindings.Size()))
+
+			for _, attr := range ([]Attr)(attrBindings) {
+				newBnds.Add(attr.name, attr.value)
+			}
+			for _, override := range ([]Attr)(overridesBindings) {
+				if attr, ok := self.AttrDefs[string(override.name)]; ok {
+					newBnds.Set(attr.Displ, override)
+					env2.values[attr.Displ] = *override.value
+				} else {
+					newBnds.Add(override.name, override.value)
+				}
+			}
+			newBnds.Sort()
+			attrBindings = newBnds
+		}
+	} else {
+		for name, attr := range self.AttrDefs {
+			val, err := attr.Expr.MaybeThunk(state, env)
+			if err != nil {
+				return err
+			}
+
+			attrBindings.Add(Symbol(name), val)
+		}
+	}
+
+	// Dynamic attrs apply *after* rec and __overrides.
+	for _, attr := range self.DynamicAttrDefs {
+		var nameVal Value
+		attr.NameExpr.Eval(state, dynamicEnv, &nameVal)
+		err = state.ForceValue(&nameVal, noPos)
+		if err != nil {
+			return err
+		}
+
+		if _, ok := nameVal.(*Null); ok {
+			continue
+		}
+
+		str, err := state.ForceStringNoCtx(&nameVal, noPos)
+		if err != nil {
+			return err
+		}
+
+		nameSym := state.symbols.Create(str)
+		if attrBindings.Find(nameSym) != nil {
+			panic("dynamic attribute already defined")
+			// throwEvalError("dynamic attribute '%1%' at %2% already defined at %3%", nameSym, i.pos, *j->pos);
+		}
+
+		attr.ValueExpr.SetName(nameSym)
+
+		// Keep sorted order so find can catch duplicates
+		val, err := attr.ValueExpr.MaybeThunk(state, dynamicEnv)
+		attrBindings.Add(nameSym, val)
+		attrBindings.Sort()
+	}
+
+	newVal := NixAttrs(attrBindings)
+	*val = &newVal
+
+	return nil
 }
 
 func (self *ExprAttrs) BindVars(staticEnv *StaticEnv) error {
-	panic("not implemented")
+	var err error = nil
+
+	dynamicEnv := staticEnv
+	newEnv := &StaticEnv{
+		up:     staticEnv,
+		isWith: false,
+		vars:   map[Symbol]uint{},
+	}
+
+	if self.Recursive {
+		dynamicEnv = newEnv
+		var displ uint = 0
+
+		for name, attr := range self.AttrDefs {
+			newEnv.vars[Symbol(name)] = displ
+			attr.Displ = displ
+			self.AttrDefs[name] = attr
+			displ += 1
+		}
+
+		for _, attr := range self.AttrDefs {
+			if attr.Inherited {
+				err = attr.Expr.BindVars(staticEnv)
+				if err != nil {
+					return err
+				}
+			} else {
+				err = attr.Expr.BindVars(newEnv)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	} else {
+		for _, attr := range self.AttrDefs {
+			err = attr.Expr.BindVars(staticEnv)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	for _, attr := range self.DynamicAttrDefs {
+		err = attr.NameExpr.BindVars(dynamicEnv)
+		if err != nil {
+			return err
+		}
+		err = attr.ValueExpr.BindVars(dynamicEnv)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (self *ExprAttrs) SetName(name Symbol) {}
@@ -274,6 +463,7 @@ func (self *ExprLet) BindVars(staticEnv *StaticEnv) error {
 	for name, attr := range self.Attrs.AttrDefs {
 		newEnv.vars[Symbol(name)] = displ
 		attr.Displ = displ
+		self.Attrs.AttrDefs[name] = attr
 		displ += 1
 	}
 
