@@ -61,7 +61,11 @@ type Lambda struct {
 	Fun *ExprLambda
 }
 type Blackhole struct{}
-type PrimOp struct{}
+type PrimOp struct {
+	Fun   func(state *EvalState, pos Pos, args []Value, val *Value) error
+	Arity int
+	Name  Symbol
+}
 type PrimOpApp struct {
 	Left  Value
 	Right Value
@@ -186,6 +190,17 @@ func (self *EvalState) createBaseEnv() {
 
 	null := Null{}
 	self.addConstant("false", Value(&null))
+
+	pr := PrimOp{
+		Arity: 1,
+		Fun: func(state *EvalState, pos Pos, args []Value, val *Value) error {
+			str := args[0].(*NixString)
+			fmt.Println(">>", string(str.String))
+			*val = args[0]
+			return nil
+		},
+	}
+	self.addConstant("print", Value(&pr))
 }
 
 func (self *EvalState) coerceToString(pos Pos, val Value, context [][]byte, coerceMore bool, copyToStore bool) string {
@@ -358,7 +373,50 @@ func (self *EvalState) ForceValue(val *Value, pos Pos) error {
 }
 
 func (self *EvalState) callPrimOp(fun *Value, arg *Value, val *Value, pos Pos) error {
-	panic("callPrimOp not impl")
+	var argsDone int
+
+	primOp := fun
+	for {
+		if prim, ok := (*primOp).(*PrimOpApp); ok {
+			argsDone++
+			primOp = &prim.Left
+		} else {
+			break
+		}
+	}
+
+	arity := (*primOp).(*PrimOp).Arity
+	argsLeft := arity - argsDone
+
+	if argsLeft == 1 {
+		// We have all the arguments, so call the primop.
+		//
+		// Put all the arguments in an array.
+		vArgs := make([]Value, arity, arity)
+		n := arity - 1
+		vArgs[n] = *arg
+		n--
+		arg = fun
+		for {
+			if prim, ok := (*arg).(*PrimOpApp); ok {
+				vArgs[n] = prim.Right
+				n--
+				arg = &prim.Left
+			} else {
+				break
+			}
+		}
+
+		// And call the primop.
+		return (*primOp).(*PrimOp).Fun(self, pos, vArgs, val)
+	} else {
+		*val = &PrimOpApp{
+			Left:  *fun,
+			Right: *arg,
+		}
+	}
+
+	return nil
 }
 
 func (self *EvalState) callFunction(fun *Value, arg *Value, val *Value, pos Pos) error {

@@ -48,7 +48,7 @@ var noPos = Pos{}
 //var ex = []byte("[ 1 2 2 ]")
 //var ex = []byte("rec { a = 123; b = a+a; }")
 //var ex = []byte("(rec { f = 777; a = 10; b = 20; c = 30; d = 40; e = c+1; __overrides = { c = 31; f = 42; }; }).f")
-var ex = []byte("({a }: a) { }")
+var ex = []byte("print \"asdf\"")
 
 //var ex = []byte("./foo/bar")
 
