@@ -47,7 +47,8 @@ var noPos = Pos{}
 //var ex = []byte("builtins.${\"foo\"}")
 //var ex = []byte("[ 1 2 2 ]")
 //var ex = []byte("rec { a = 123; b = a+a; }")
-var ex = []byte("(rec { f = 777; a = 10; b = 20; c = 30; d = 40; e = c+1; __overrides = { c = 31; f = 42; }; }).f")
+//var ex = []byte("(rec { f = 777; a = 10; b = 20; c = 30; d = 40; e = c+1; __overrides = { c = 31; f = 42; }; }).f")
+var ex = []byte("({a }: a) { }")
 
 //var ex = []byte("./foo/bar")
 
@@ -436,7 +437,7 @@ func (self *parser) parseExprFunction() (Expr, error) {
 
 			lambda := &ExprLambda{
 				Pos:        t1.Pos,
-				Name:       self.symbols.Create(string(t1.Text)),
+				Arg:        self.symbols.Create(string(t1.Text)),
 				MatchAttrs: false,
 				Formals:    Formals{Formals: []Formal{}, ArgNames: map[string]struct{}{}},
 				Body:       body,
@@ -475,7 +476,7 @@ func (self *parser) parseExprFunction() (Expr, error) {
 
 			lambda := &ExprLambda{
 				Pos:        t1.Pos,
-				Name:       self.symbols.Create(string(t1.Text)),
+				Arg:        self.symbols.Create(string(t1.Text)),
 				MatchAttrs: true,
 				Formals:    formals,
 				Body:       body,
@@ -590,7 +591,7 @@ func (self *parser) parseExprFunction() (Expr, error) {
 
 			lambda := &ExprLambda{
 				Pos:        t1.Pos,
-				Name:       self.symbols.Create(string(nameTok.Text)),
+				Arg:        self.symbols.Create(string(nameTok.Text)),
 				MatchAttrs: true,
 				Formals:    formals,
 				Body:       body,
@@ -607,7 +608,7 @@ func (self *parser) parseExprFunction() (Expr, error) {
 
 			lambda := &ExprLambda{
 				Pos:        t1.Pos,
-				Name:       "",
+				Arg:        "",
 				MatchAttrs: true,
 				Formals:    formals,
 				Body:       body,
@@ -893,12 +894,17 @@ func (self *parser) parseExprApp() (Expr, error) {
 		switch tok.TokenType {
 		case ID, INT, FLOAT, '"', IND_STRING_OPEN, PATH, HPATH, SPATH, URI, '(', LET, REC, '{', '[':
 
-			body, err := self.parseExprSelect()
+			arg, err := self.parseExprSelect()
 			if err != nil {
 				return nil, err
 			}
 
-			expr = &ExprApp{pos, expr, body}
+			expr = &ExprBinOp{
+				Type:  BinOpApp,
+				Pos:   pos,
+				Expr1: expr,
+				Expr2: arg,
+			}
 		default:
 			return expr, nil
 		}
@@ -935,7 +941,12 @@ func (self *parser) parseExprSelect() (Expr, error) {
 		return &ExprSelect{tok1.Pos, simple, path, def}, nil
 	case OR_KW:
 		self.advance(1)
-		return &ExprApp{tok1.Pos, simple, &ExprVar{tok1.Pos, self.symbols.Create("or"), false, 0, 0}}, nil
+		return &ExprBinOp{
+			Type:  BinOpApp,
+			Pos:   tok1.Pos,
+			Expr1: simple,
+			Expr2: &ExprVar{tok1.Pos, self.symbols.Create("or"), false, 0, 0},
+		}, nil
 	}
 
 	return simple, nil

@@ -16,6 +16,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -52,12 +53,12 @@ type Thunk struct {
 	Expr Expr
 }
 type App struct {
-	Left  Expr
-	Right Expr
+	Left  Value
+	Right Value
 }
 type Lambda struct {
 	Env *Env
-	Fun ExprLambda
+	Fun *ExprLambda
 }
 type Blackhole struct{}
 type PrimOp struct{}
@@ -144,8 +145,14 @@ func (self *Bindings) Find(name Symbol) *Value {
 }
 
 func (self *Bindings) Sort() {
-	// TODO
+	// TODO: benchmark
+	sort.Sort(self)
 }
+
+// sort.Interface impl.
+func (self *Bindings) Len() int           { return len(*self) }
+func (self *Bindings) Swap(i, j int)      { (*self)[i], (*self)[j] = (*self)[j], (*self)[i] }
+func (self *Bindings) Less(i, j int) bool { return (*self)[i].name < (*self)[j].name }
 
 type SymbolTable struct {
 	symbols map[string]string
@@ -342,7 +349,7 @@ func (self *EvalState) ForceValue(val *Value, pos Pos) error {
 			return err
 		}
 	} else if app, ok := (*val).(*App); ok {
-		return self.callFunction(app.Left, app.Right, val, noPos)
+		return self.callFunction(&app.Left, &app.Right, val, noPos)
 	} else if _, ok := (*val).(*Blackhole); ok {
 		return EvalError(fmt.Sprintf("infinite recursion encountered, at %v", pos))
 	}
@@ -350,14 +357,125 @@ func (self *EvalState) ForceValue(val *Value, pos Pos) error {
 	return nil
 }
 
-func (self *EvalState) callFunction(left Expr, right Expr, val *Value, pos Pos) error {
-	panic("callFunction not impl.")
+func (self *EvalState) callPrimOp(fun *Value, arg *Value, val *Value, pos Pos) error {
+	panic("callPrimOp not impl")
+}
+
+func (self *EvalState) callFunction(fun *Value, arg *Value, val *Value, pos Pos) error {
+	err := self.ForceValue(fun, pos)
+	if err != nil {
+		return err
+	}
+
+	switch v := (*fun).(type) {
+	case *PrimOp:
+		err := self.callPrimOp(fun, arg, val, pos)
+		if err != nil {
+			return err
+		}
+		return nil
+	case *PrimOpApp:
+		err := self.callPrimOp(fun, arg, val, pos)
+		if err != nil {
+			return err
+		}
+		return nil
+	case *NixAttrs:
+		found := (*Bindings)(v).Find("__functor")
+		if found != nil {
+			var v2 Value = nil
+			err := self.callFunction(found, fun, &v2, pos)
+			if err != nil {
+				return err
+			}
+			return self.callFunction(&v2, arg, val, pos)
+		}
+	case *Lambda:
+		lambda := v.Fun
+		var size int
+
+		if lambda.Arg != "" {
+			size += 1
+		}
+
+		size += len(lambda.Formals.Formals)
+
+		env2 := &Env{
+			up:       v.Env,
+			prevWith: 0,
+			kind:     EnvPlain,
+			values:   make([]Value, size, size),
+		}
+
+		var displ uint = 0
+
+		if !lambda.MatchAttrs {
+			env2.values[displ] = *arg
+			displ++
+		} else {
+			argBindings, err := self.ForceAttrs(arg, pos)
+			if err != nil {
+				return err
+			}
+
+			if lambda.Arg != "" {
+				env2.values[displ] = *arg
+				displ++
+			}
+
+			// For each formal argument, get the actual argument.  If
+			// there is no matching actual argument but the formal
+			// argument has a default, use the default.
+			var attrsUsed int = 0
+
+			for _, formal := range lambda.Formals.Formals {
+				formalVal := argBindings.Find(formal.Name)
+				if formalVal == nil {
+					if formal.Def == nil {
+						panic("called without required argument")
+						// throwTypeError("%1% called without required argument '%2%', at %3%", lambda, i.name, pos);
+					}
+					defVal, err := formal.Def.MaybeThunk(self, env2)
+					if err != nil {
+						return err
+					}
+					env2.values[displ] = *defVal
+					displ++
+				} else {
+					attrsUsed++
+					env2.values[displ] = *formalVal
+					displ++
+				}
+
+				// Check that each actual argument is listed as a formal
+				// argument (unless the attribute match specifies a `...').
+				if !lambda.Formals.Ellipsis && attrsUsed != len(argBindings) {
+					// Nope, so show the first unexpected argument to the
+					// user.
+					for _, attr := range argBindings {
+						if _, found := lambda.Formals.ArgNames[string(attr.name)]; !found {
+							panic("called with unexpected argument")
+							// throwTypeError("%1% called with unexpected argument '%2%', at %3%", lambda, i.name, pos);
+						}
+					}
+					panic("the impossible happened")
+				}
+			}
+		}
+
+		// Evaluate the body.
+		return v.Fun.Body.Eval(self, env2, val)
+
+	default:
+		panic("attempt to call something which is not a function")
+		// throwTypeError("attempt to call something which is not a function but %1%, at %2%", fun, pos);
+	}
+
 	return nil
 }
 
 func (self *EvalState) addConstant(name string, v Value) {
 	self.staticBaseEnv.vars[self.symbols.Create(name)] = self.baseEnvDispl
-	//self.baseEnv.values[self.baseEnvDispl] = v
 	self.baseEnv.values = append(self.baseEnv.values, v)
 	self.baseEnvDispl += 1
 

@@ -339,17 +339,58 @@ type DynamicAttrDef struct {
 type ExprLambda struct {
 	Pos
 	Name       Symbol
+	Arg        Symbol
 	MatchAttrs bool
 	Formals    Formals
 	Body       Expr
 }
 
 func (self *ExprLambda) Eval(state *EvalState, env *Env, val *Value) error {
-	panic("not implemented")
+	lam := Lambda{
+		Env: env,
+		Fun: self,
+	}
+
+	*val = &lam
+	return nil
 }
 
 func (self *ExprLambda) BindVars(staticEnv *StaticEnv) error {
-	panic("not implemented")
+	newEnv := &StaticEnv{
+		up:     staticEnv,
+		isWith: false,
+		vars:   map[Symbol]uint{},
+	}
+
+	var displ uint = 0
+
+	if self.Arg != "" {
+		newEnv.vars[self.Arg] = displ
+		displ++
+	}
+
+	if self.MatchAttrs {
+		for _, formal := range self.Formals.Formals {
+			newEnv.vars[formal.Name] = displ
+			displ++
+		}
+
+		for _, formal := range self.Formals.Formals {
+			if formal.Def != nil {
+				err := formal.Def.BindVars(newEnv)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	err := self.Body.BindVars(newEnv)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (self *ExprLambda) SetName(name Symbol) {
@@ -561,7 +602,30 @@ const (
 	BinOpMult
 	BinOpDiv
 	BinOpConcat
+	BinOpApp
 )
+
+var binOpName = [...]string{
+	BinOpEQ:      "BinOpEQ",
+	BinOpNEQ:     "BinOpNEQ",
+	BinOpLE:      "BinOpLE",
+	BinOpLEQ:     "BinOpLEQ",
+	BinOpGE:      "BinOpGE",
+	BinOpGEQ:     "BinOpGEQ",
+	BinOpAnd:     "BinOpAnd",
+	BinOpOr:      "BinOpOr",
+	BinOpImpl:    "BinOpImpl",
+	BinOpUpdate:  "BinOpUpdate",
+	BinOpHasAttr: "BinOpHasAttr",
+	BinOpSub:     "BinOpSub",
+	BinOpMult:    "BinOpMult",
+	BinOpDiv:     "BinOpDiv",
+	BinOpConcat:  "BinOpConcat",
+}
+
+func (self BinOp) String() string {
+	return binOpName[self]
+}
 
 type ExprBinOp struct {
 	Pos
@@ -571,38 +635,43 @@ type ExprBinOp struct {
 }
 
 func (self *ExprBinOp) Eval(state *EvalState, env *Env, val *Value) error {
-	panic("not implemented")
+	switch self.Type {
+	case BinOpApp:
+		var vFun Value = nil
+		self.Expr1.Eval(state, env, &vFun)
+		vArg, err := self.Expr2.MaybeThunk(state, env)
+		if err != nil {
+			return err
+		}
+
+		state.callFunction(&vFun, vArg, val, self.Pos)
+	default:
+		panic(self.Type.String() + ".Eval not implemented")
+	}
+	//    Value vFun;
+	//    e1->eval(state, env, vFun);
+	//    state.callFunction(vFun, *(e2->maybeThunk(state, env)), v, pos);
+
+	return nil
 }
 
 func (self *ExprBinOp) BindVars(staticEnv *StaticEnv) error {
-	panic("not implemented")
+	err := self.Expr1.BindVars(staticEnv)
+	if err != nil {
+		return err
+	}
+
+	err = self.Expr2.BindVars(staticEnv)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (self *ExprBinOp) SetName(name Symbol) {}
 
 func (self *ExprBinOp) MaybeThunk(state *EvalState, env *Env) (*Value, error) {
-	return defaultMaybeThunk(self, state, env)
-}
-
-//------------------------------------------------------------------------------
-
-type ExprApp struct {
-	Pos
-	Fun Expr
-	Arg Expr
-}
-
-func (self *ExprApp) Eval(state *EvalState, env *Env, val *Value) error {
-	panic("not implemented")
-}
-
-func (self *ExprApp) BindVars(staticEnv *StaticEnv) error {
-	panic("not implemented")
-}
-
-func (self *ExprApp) SetName(name Symbol) {}
-
-func (self *ExprApp) MaybeThunk(state *EvalState, env *Env) (*Value, error) {
 	return defaultMaybeThunk(self, state, env)
 }
 
