@@ -1,24 +1,41 @@
 package main
 
+type lexContext struct {
+	// number of current unmatched open curly brackets
+	curlyCount int
+	// state to transition to after curlyCount reaches zero
+	// this should be one of: string, ind_string, error
+	resumeState int
+}
+
 type Lexer struct {
 	data      []byte
 	cs        int
 	p         int
 	pe        int
 	top       int
-	stack     []int
+	stack     []lexContext
 	lineStart int
 	lineCount int
 	act       int
 }
 
 func NewLexer(data []byte) *Lexer {
-	return &Lexer{
+	l := &Lexer{
 		cs:    scanner_start,
 		data:  data,
 		pe:    len(data),
-		stack: make([]int, 4, 4),
+		stack: make([]lexContext, 4, 4),
 	}
+
+	// put error state at top of stack
+	// set curlyCount to 1, so only an unmatched curly
+	// can result in curlyCount reaching 0, which will kick off
+	// error handling.
+	l.stack[0] = lexContext{1, 0}
+	l.top = 1
+
+	return l
 }
 
 const (

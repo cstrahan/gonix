@@ -56,7 +56,6 @@ func (l *Lexer) Lex() (Token, error) {
   //_ = _scanner_nfa_offsets
   //_ = _scanner_nfa_push_actions
   //_ = _scanner_nfa_pop_trans
-  _ = scanner_en_inside_dollar_curly
   _ = scanner_en_string
   _ = scanner_en_ind_string
 
@@ -76,11 +75,10 @@ func (l *Lexer) Lex() (Token, error) {
 
   _, _, _, _, _, _ = top, ts, te, act, eof, stack
 
-  // Try to reserve enough capacity so we can avoid copying.
-  // This factor is based on lexing all-packages.nix, where we reduce our lexing
-  // time to one third compared to the naive empty slice.
   token := Token{}
   _ = token
+
+  var err error
 
 %% write exec;
 
@@ -91,8 +89,6 @@ func (l *Lexer) Lex() (Token, error) {
   l.lineStart = lineStart
   l.lineCount = lineCount
   l.act = act
-
-  var err error
 
   if cs == %%{ write error; }%% {
     // TODO: handle error
@@ -119,7 +115,12 @@ func (l *Lexer) Lex() (Token, error) {
 
   string := |*
     ( [^$"\\] | '$' [^{"\\] | '\\' (any & NL) | '$\\' (any & NL) )* '$"'
-                  { fhold;
+                  {
+                    // don't consume the final " char.
+                    // we'll set the next state back to string,
+                    // which will handle emitting the final " char
+                    // and popping the stack.
+                    fhold;
                     EMIT_TEXT(STR, ts, te-1, data[ts:te-1]);
                     fnext string;
                     fbreak;
@@ -129,16 +130,15 @@ func (l *Lexer) Lex() (Token, error) {
                     fbreak; };
     "${"          { EMITS(DOLLAR_CURLY);
                     if len(stack) <= top {
-                      stack = append(stack, 0)
+                      stack = append(stack, lexContext{})
                     }
-                    stack[top] = ftargs
+                    stack[top] = lexContext{1, ftargs}
                     top++
-                    fnext inside_dollar_curly;
+                    fnext main;
                     fbreak;
                     };
     '"'           { EMITS(DQUOTE);
-                    top--
-                    fnext *stack[top];
+                    fnext main;
                     fbreak;
                     };
   *|;
@@ -155,156 +155,17 @@ func (l *Lexer) Lex() (Token, error) {
                           fbreak; };
     "${"                { EMITS(DOLLAR_CURLY);
                           if len(stack) <= top {
-                            stack = append(stack, 0)
+                            stack = append(stack, lexContext{})
                           }
-                          stack[top] = ftargs
+                          stack[top] = lexContext{1, ftargs}
                           top++
-                          fnext inside_dollar_curly;
+                          fnext main;
                           fbreak; };
     "''"                { EMITS(IND_STRING_CLOSE);
-                          top--
-                          fnext *stack[top];
+                          fnext main;
                           fbreak; };
     "'"                 { EMIT_TEXT(IND_STR, ts, te, []byte("'"))
                           fbreak; };
-  *|;
-
-  inside_dollar_curly := |*
-    "if"          { EMITS(IF)
-                    fbreak; };
-    "then"        { EMITS(THEN)
-                    fbreak; };
-    "else"        { EMITS(ELSE)
-                    fbreak; };
-    "assert"      { EMITS(ASSERT)
-                    fbreak; };
-    "with"        { EMITS(WITH)
-                    fbreak; };
-    "let"         { EMITS(LET)
-                    fbreak; };
-    "in"          { EMITS(IN)
-                    fbreak; };
-    "rec"         { EMITS(REC)
-                    fbreak; };
-    "inherit"     { EMITS(INHERIT)
-                    fbreak; };
-    "or"          { EMITS(OR_KW)
-                    fbreak; };
-    "..."         { EMITS(ELLIPSIS)
-                    fbreak; };
-    ":"           { EMITS(COLON)
-                    fbreak; };
-    ";"           { EMITS(SCOLON)
-                    fbreak; };
-    "@"           { EMITS(AT)
-                    fbreak; };
-    "-"           { EMITS(MINUS)
-                    fbreak; };
-    "+"           { EMITS(PLUS)
-                    fbreak; };
-    "!"           { EMITS(NOT)
-                    fbreak; };
-    "*"           { EMITS(STAR)
-                    fbreak; };
-
-    "=="          { EMITS(EQ)
-                    fbreak; };
-    "!="          { EMITS(NEQ)
-                    fbreak; };
-    "<="          { EMITS(LEQ)
-                    fbreak; };
-    ">="          { EMITS(GEQ)
-                    fbreak; };
-    "&&"          { EMITS(AND)
-                    fbreak; };
-    "||"          { EMITS(OR)
-                    fbreak; };
-    "->"          { EMITS(IMPL)
-                    fbreak; };
-    "//"          { EMITS(UPDATE)
-                    fbreak; };
-    "++"          { EMITS(CONCAT)
-                    fbreak; };
-
-
-    ID            { EMIT_TEXT(ID, ts, te, data[ts:te])
-                    fbreak; };
-    INT           { EMIT_TEXT(INT, ts, te, data[ts:te])
-                    fbreak; };
-    FLOAT         { EMIT_TEXT(FLOAT, ts, te, data[ts:te])
-                    fbreak; };
-
-    "${"          { EMITS(DOLLAR_CURLY);
-                    if len(stack) <= top {
-                      stack = append(stack, 0)
-                    }
-                    stack[top] = ftargs
-                    top++
-                    fnext inside_dollar_curly;
-                    fbreak; };
-    "}"           { EMITS(RCURLY)
-                    top--
-                    fnext *stack[top];
-                    fbreak; };
-    "{"           { EMITS(LCURLY)
-                    if len(stack) <= top {
-                      stack = append(stack, 0)
-                    }
-                    stack[top] = ftargs
-                    top++
-                    fnext inside_dollar_curly;
-                    fbreak; };
-
-    "''" (' '* ('\n' & NL))?
-                  { EMITS(IND_STRING_OPEN);
-                    if len(stack) <= top {
-                      stack = append(stack, 0)
-                    }
-                    stack[top] = ftargs
-                    top++
-                    fnext ind_string;
-                    fbreak; };
-
-    PATH          { EMIT_TEXT(PATH, ts, te, data[ts:te])
-                    fbreak; };
-    HPATH         { EMIT_TEXT(PATH, ts, te, data[ts:te])
-                    fbreak; };
-    SPATH         { EMIT_TEXT(PATH, ts, te, data[ts:te])
-                    fbreak; };
-    URI           { EMIT_TEXT(URI, ts, te, data[ts:te])
-                    fbreak; };
-
-    [ \t\r\n]+ & NL;
-
-    SCOMMENT;
-    LCOMMENT;
-
-    "."           { EMITS(DOT)
-                    fbreak; };
-
-    '"'           { EMITS(DQUOTE);
-                    if len(stack) <= top {
-                      stack = append(stack, 0)
-                    }
-                    stack[top] = ftargs
-                    top++
-                    fnext string;
-                    fbreak; };
-
-    "="           { EMITS(EQS)
-                    fbreak; };
-    "?"           { EMITS(QMARK)
-                    fbreak; };
-    ","           { EMITS(COMMA)
-                    fbreak; };
-    "("           { EMITS(LPAREN)
-                    fbreak; };
-    ")"           { EMITS(RPAREN)
-                    fbreak; };
-    "["           { EMITS(LBRACK)
-                    fbreak; };
-    "]"           { EMITS(RBRACK)
-                    fbreak; };
   *|;
 
   main := |*
@@ -372,25 +233,21 @@ func (l *Lexer) Lex() (Token, error) {
                     fbreak; };
 
     "${"          { EMITS(DOLLAR_CURLY);
-                    if len(stack) <= top {
-                      stack = append(stack, 0)
-                    }
-                    stack[top] = ftargs
-                    top++
-                    fnext inside_dollar_curly;
+                    stack[top-1].curlyCount += 1
                     fbreak; };
     "}"           { EMITS(RCURLY)
+                    stack[top-1].curlyCount -= 1
+                    if stack[top-1].curlyCount == 0 {
+                      fnext *stack[top-1].resumeState;
+                      top--
+                    }
                     fbreak; };
     "{"           { EMITS(LCURLY)
+                    stack[top-1].curlyCount += 1
                     fbreak; };
 
     "''" (' '* ('\n' & NL))?
                   { EMITS(IND_STRING_OPEN);
-                    if len(stack) <= top {
-                      stack = append(stack, 0)
-                    }
-                    stack[top] = ftargs
-                    top++
                     fnext ind_string;
                     fbreak; };
 
@@ -412,11 +269,6 @@ func (l *Lexer) Lex() (Token, error) {
                     fbreak; };
 
     '"'           { EMITS(DQUOTE);
-                    if len(stack) <= top {
-                      stack = append(stack, 0)
-                    }
-                    stack[top] = ftargs
-                    top++
                     fnext string;
                     fbreak; };
 

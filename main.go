@@ -60,33 +60,22 @@ func printTok(tok Token) string {
 //}
 
 // var ex = []byte("print \"asdf\"    ")
-var ex = []byte("\"abc$\"")
+var ex = []byte(`''abc ${ { "${ XYZ }" }} } "''' def''`)
 
 func main() {
+
 	lexer := NewLexer(ex)
-	t, err := lexer.Lex()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(printTok(t))
 
-	t, err = lexer.Lex()
-	if err != nil {
-		panic(err)
+	for {
+		t, err := lexer.Lex()
+		if t.TokenType == EOF {
+			break
+		}
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(printTok(t))
 	}
-	fmt.Println(printTok(t))
-
-	t, err = lexer.Lex()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	fmt.Println(printTok(t))
-
-	t, err = lexer.Lex()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(printTok(t))
 }
 
 // func main() {
