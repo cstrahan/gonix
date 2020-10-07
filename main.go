@@ -2,13 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 var noPos = Pos{}
@@ -48,7 +44,6 @@ var noPos = Pos{}
 //var ex = []byte("[ 1 2 2 ]")
 //var ex = []byte("rec { a = 123; b = a+a; }")
 //var ex = []byte("(rec { f = 777; a = 10; b = 20; c = 30; d = 40; e = c+1; __overrides = { c = 31; f = 42; }; }).f")
-var ex = []byte("print \"asdf\"")
 
 //var ex = []byte("./foo/bar")
 
@@ -64,91 +59,121 @@ func printTok(tok Token) string {
 //	return fmt.Sprintf("(%v:%v)", self.Start, self.End)
 //}
 
+// var ex = []byte("print \"asdf\"    ")
+var ex = []byte("print \"abc\"")
+
 func main() {
-	//file, _ := ioutil.ReadFile("/home/cstrahan/src/nixpkgs/pkgs/top-level/all-packages.nix")
-	//ex = file
-
-	symbols := SymbolTable{symbols: map[string]string{}}
-
-	data := ex
-
-	start := time.Now()
-	tokens, err := lex(ex)
-	//for _, tok := range tokens {
-	//	fmt.Println(printTok(tok))
-	//}
-	if err != nil {
-		log.Fatalln(err)
-	}
-	elapsedLex := time.Since(start)
-
-	//fmt.Printf("file size: %v\n", len(file))
-	//fmt.Printf("tokens: %v\n", len(tokens))
-	//fmt.Printf("lexed in %f\n", elapsedLex.Seconds())
-	//os.Exit(0)
-
-	// synthesize some EOF tokens for the sake of lookahead
-	eof := Token{TokenType: EOF}
-	tokens = append(tokens, eof, eof, eof, eof)
-
-	start = time.Now()
-	p := parser{pos: 0, tokens: tokens, data: data, symbols: symbols}
-	expr, err := p.Parse()
-	_ = expr
-	if err != nil {
-		log.Fatalln("parse failed:", err)
-	}
-
-	elapsedParse := time.Since(start)
-	fmt.Printf("lexed in %f\n", elapsedLex.Seconds())
-	fmt.Printf("parsed in %f\n", elapsedParse.Seconds())
-	fmt.Printf("both in %f\n", (elapsedLex + elapsedParse).Seconds())
-
-	//spew.Dump(expr)
-	//log.Println(expr)
-
-	state := &EvalState{
-		baseEnvDispl: 0,
-		baseEnv: &Env{
-			up:       nil,
-			prevWith: 0,
-			kind:     EnvPlain,
-			values:   []Value{},
-		},
-		staticBaseEnv: &StaticEnv{
-			up:     nil,
-			isWith: false,
-			vars:   map[Symbol]uint{},
-		},
-		symbols: symbols,
-	}
-	state.createBaseEnv()
-
-	err = expr.BindVars(state.staticBaseEnv)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	//spew.Dump(expr)
-	//os.Exit(0)
-
-	var val Value = nil
-
-	err = state.Eval(expr, &val)
+	lexer := NewLexer(ex)
+	t, err := lexer.Lex()
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println(printTok(t))
 
-	fmt.Println(">> UNFORCED:")
-	//spew.Dump(val)
-
-	fmt.Println(">> FORCED:")
-	err = state.ForceValue(&val, noPos)
+	t, err = lexer.Lex()
 	if err != nil {
 		panic(err)
 	}
-	spew.Dump(val)
+	fmt.Println(printTok(t))
+
+	t, err = lexer.Lex()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	fmt.Println(printTok(t))
+
+	t, err = lexer.Lex()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(printTok(t))
 }
+
+// func main() {
+// 	//file, _ := ioutil.ReadFile("/home/cstrahan/src/nixpkgs/pkgs/top-level/all-packages.nix")
+// 	//ex = file
+
+// 	symbols := SymbolTable{symbols: map[string]string{}}
+
+// 	data := ex
+
+// 	start := time.Now()
+// 	tokens, err := lex(ex)
+// 	//for _, tok := range tokens {
+// 	//	fmt.Println(printTok(tok))
+// 	//}
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
+// 	elapsedLex := time.Since(start)
+
+// 	//fmt.Printf("file size: %v\n", len(file))
+// 	//fmt.Printf("tokens: %v\n", len(tokens))
+// 	//fmt.Printf("lexed in %f\n", elapsedLex.Seconds())
+// 	//os.Exit(0)
+
+// 	// synthesize some EOF tokens for the sake of lookahead
+// 	eof := Token{TokenType: EOF}
+// 	tokens = append(tokens, eof, eof, eof, eof)
+
+// 	start = time.Now()
+// 	p := parser{pos: 0, tokens: tokens, data: data, symbols: symbols}
+// 	expr, err := p.Parse()
+// 	_ = expr
+// 	if err != nil {
+// 		log.Fatalln("parse failed:", err)
+// 	}
+
+// 	elapsedParse := time.Since(start)
+// 	fmt.Printf("lexed in %f\n", elapsedLex.Seconds())
+// 	fmt.Printf("parsed in %f\n", elapsedParse.Seconds())
+// 	fmt.Printf("both in %f\n", (elapsedLex + elapsedParse).Seconds())
+
+// 	//spew.Dump(expr)
+// 	//log.Println(expr)
+
+// 	state := &EvalState{
+// 		baseEnvDispl: 0,
+// 		baseEnv: &Env{
+// 			up:       nil,
+// 			prevWith: 0,
+// 			kind:     EnvPlain,
+// 			values:   []Value{},
+// 		},
+// 		staticBaseEnv: &StaticEnv{
+// 			up:     nil,
+// 			isWith: false,
+// 			vars:   map[Symbol]uint{},
+// 		},
+// 		symbols: symbols,
+// 	}
+// 	state.createBaseEnv()
+
+// 	err = expr.BindVars(state.staticBaseEnv)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
+
+// 	//spew.Dump(expr)
+// 	//os.Exit(0)
+
+// 	var val Value = nil
+
+// 	err = state.Eval(expr, &val)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	fmt.Println(">> UNFORCED:")
+// 	//spew.Dump(val)
+
+// 	fmt.Println(">> FORCED:")
+// 	err = state.ForceValue(&val, noPos)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	spew.Dump(val)
+// }
 
 type parser struct {
 	pos     int

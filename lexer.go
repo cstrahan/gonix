@@ -1,5 +1,26 @@
 package main
 
+type Lexer struct {
+	data      []byte
+	cs        int
+	p         int
+	pe        int
+	top       int
+	stack     []int
+	lineStart int
+	lineCount int
+	act       int
+}
+
+func NewLexer(data []byte) *Lexer {
+	return &Lexer{
+		cs:    scanner_start,
+		data:  data,
+		pe:    len(data),
+		stack: make([]int, 4, 4),
+	}
+}
+
 const (
 	IF = iota
 	THEN

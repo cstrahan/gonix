@@ -9,3 +9,6 @@
 * for string interning:
     https://github.com/josharian/intern/blob/master/intern.go
     https://gist.github.com/karlseguin/6570372
+
+* incremental:
+    https://willspeak.me/2015/03/24/tokenising-in-c-with-ragel.html
