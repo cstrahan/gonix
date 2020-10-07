@@ -52,7 +52,7 @@ var noPos = Pos{}
 //var ex = []byte(`foo: bar`)
 
 func printTok(tok Token) string {
-	return fmt.Sprintf("%v:%v  %s  [%s]", tok.Pos.Start, tok.Pos.End, tok.TokenType, string(tok.Text))
+	return fmt.Sprintf("%v:%v (line %v col %v)  %s  [%s]", tok.Pos.Start, tok.Pos.End, tok.Pos.Row, tok.Pos.Col, tok.TokenType, string(tok.Text))
 }
 
 //func (self Pos) String() string {
@@ -60,7 +60,7 @@ func printTok(tok Token) string {
 //}
 
 // var ex = []byte("print \"asdf\"    ")
-var ex = []byte("print \"abc\"")
+var ex = []byte("\"abc$\"")
 
 func main() {
 	lexer := NewLexer(ex)

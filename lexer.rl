@@ -43,6 +43,9 @@ func unescapeStr(s []byte) []byte {
 }
 
 func (l *Lexer) Lex() (Token, error) {
+  if l.p == l.pe {
+    return Token{ TokenType: TokenType(EOF), Pos: Pos { l.pe, l.pe, l.lineCount+1, (l.pe-l.lineStart)+1 }, Text: nil }, nil
+  }
 
   // make go stop complaining about unused variables
   _ = scanner_start
@@ -96,10 +99,6 @@ func (l *Lexer) Lex() (Token, error) {
     err = fmt.Errorf("Unexpected token at %v %v", lineCount+1, (p-lineStart)+1)
   }
 
-	//if cs < scanner_first_final {
-  //  err = fmt.Errorf("Unexpected token at %v %v", lineCount+1, (p-lineStart)+1)
-  //}
-
   return token, err
 }
 
@@ -120,10 +119,9 @@ func (l *Lexer) Lex() (Token, error) {
 
   string := |*
     ( [^$"\\] | '$' [^{"\\] | '\\' (any & NL) | '$\\' (any & NL) )* '$"'
-                  { EMIT_TEXT(STR, ts, te-1, data[ts:te-1]);
-                    EMIT(DQUOTE, te-1, te);
-                    top--
-                    fnext *stack[top];
+                  { fhold;
+                    EMIT_TEXT(STR, ts, te-1, data[ts:te-1]);
+                    fnext string;
                     fbreak;
                   };
     ( [^$"\\] | '$' [^{"\\] | '\\' (any & NL) | '$\\' (any & NL) )+
@@ -142,7 +140,6 @@ func (l *Lexer) Lex() (Token, error) {
                     top--
                     fnext *stack[top];
                     fbreak;
-
                     };
   *|;
 
