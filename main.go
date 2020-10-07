@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var noPos = Pos{}
@@ -60,22 +62,33 @@ func printTok(tok Token) string {
 //}
 
 // var ex = []byte("print \"asdf\"    ")
-var ex = []byte(`''abc ${ { "${ XYZ }" }} } "''' def''`)
+var ex = []byte(`''abc ${ { "${ XYZ }" }} "''' def''`)
 
 func main() {
-
-	lexer := NewLexer(ex)
-
-	for {
-		t, err := lexer.Lex()
-		if t.TokenType == EOF {
-			break
-		}
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(printTok(t))
+	file, err := ioutil.ReadFile("all-packages.nix")
+	if err != nil {
+		panic(err)
 	}
+
+	start := time.Now()
+
+	for i := 0; i < 1000; i++ {
+		lexer := NewLexer(file)
+
+		for {
+			t, err := lexer.Lex()
+			if err != nil {
+				panic(err)
+			} else if t.TokenType == EOF {
+				break
+			}
+			//fmt.Println(printTok(t))
+		}
+	}
+
+	t := time.Now()
+	elapsed := t.Sub(start)
+	fmt.Println(elapsed.Milliseconds())
 }
 
 // func main() {

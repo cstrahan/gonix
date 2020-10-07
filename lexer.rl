@@ -61,10 +61,9 @@ func (l *Lexer) Lex() (Token, error) {
   eof := pe
   ts, te, act := 0, 0, 0
 
-  token := Token{}
+  token := Token{TokenType: EOF}
 
   var err error
-
 %% write exec;
 
   // store state in l
@@ -76,8 +75,9 @@ func (l *Lexer) Lex() (Token, error) {
   l.act = act
 
   if cs == %%{ write error; }%% {
-    // TODO: handle error
     err = fmt.Errorf("Unexpected token at %v %v", lineCount+1, (p-lineStart)+1)
+  } else if token.TokenType == EOF {
+    return Token{ TokenType: TokenType(EOF), Pos: Pos { l.pe, l.pe, l.lineCount+1, (l.pe-l.lineStart)+1 }, Text: nil }, nil
   }
 
   return token, err

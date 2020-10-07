@@ -75,11 +75,11 @@ func (l *Lexer) Lex() (Token, error) {
 	eof := pe
 	ts, te, act := 0, 0, 0
 
-	token := Token{}
+	token := Token{TokenType: EOF}
 
 	var err error
 
-//line lexer-generated.go.in:84
+//line lexer-generated.go.in:83
 	{
 		if p == pe {
 			goto _test_eof
@@ -1191,7 +1191,7 @@ func (l *Lexer) Lex() (Token, error) {
 //line NONE:1
 		ts = p
 
-//line lexer-generated.go.in:836
+//line lexer-generated.go.in:835
 		switch data[p] {
 		case 0:
 			goto st1
@@ -1323,7 +1323,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof34
 		}
 	st_case_34:
-//line lexer-generated.go.in:968
+//line lexer-generated.go.in:967
 		switch data[p] {
 		case 69:
 			goto st3
@@ -1377,7 +1377,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof36
 		}
 	st_case_36:
-//line lexer-generated.go.in:1021
+//line lexer-generated.go.in:1020
 		switch data[p] {
 		case 9:
 			goto st36
@@ -1447,7 +1447,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof39
 		}
 	st_case_39:
-//line lexer-generated.go.in:1091
+//line lexer-generated.go.in:1090
 		switch data[p] {
 		case 10:
 			goto tr10
@@ -1479,7 +1479,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof40
 		}
 	st_case_40:
-//line lexer-generated.go.in:1123
+//line lexer-generated.go.in:1122
 		switch data[p] {
 		case 43:
 			goto tr100
@@ -1520,7 +1520,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof41
 		}
 	st_case_41:
-//line lexer-generated.go.in:1164
+//line lexer-generated.go.in:1163
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1609,7 +1609,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof42
 		}
 	st_case_42:
-//line lexer-generated.go.in:1253
+//line lexer-generated.go.in:1252
 		switch data[p] {
 		case 43:
 			goto tr15
@@ -1643,7 +1643,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof43
 		}
 	st_case_43:
-//line lexer-generated.go.in:1287
+//line lexer-generated.go.in:1286
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1679,7 +1679,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof44
 		}
 	st_case_44:
-//line lexer-generated.go.in:1323
+//line lexer-generated.go.in:1322
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1745,7 +1745,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof45
 		}
 	st_case_45:
-//line lexer-generated.go.in:1389
+//line lexer-generated.go.in:1388
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1849,7 +1849,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof46
 		}
 	st_case_46:
-//line lexer-generated.go.in:1493
+//line lexer-generated.go.in:1492
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1914,7 +1914,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof15
 		}
 	st_case_15:
-//line lexer-generated.go.in:1557
+//line lexer-generated.go.in:1556
 		switch data[p] {
 		case 10:
 			goto tr22
@@ -1948,7 +1948,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof47
 		}
 	st_case_47:
-//line lexer-generated.go.in:1591
+//line lexer-generated.go.in:1590
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1987,7 +1987,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof48
 		}
 	st_case_48:
-//line lexer-generated.go.in:1630
+//line lexer-generated.go.in:1629
 		switch data[p] {
 		case 43:
 			goto st9
@@ -2194,7 +2194,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof50
 		}
 	st_case_50:
-//line lexer-generated.go.in:1837
+//line lexer-generated.go.in:1836
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2354,7 +2354,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof53
 		}
 	st_case_53:
-//line lexer-generated.go.in:1997
+//line lexer-generated.go.in:1996
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2392,7 +2392,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof54
 		}
 	st_case_54:
-//line lexer-generated.go.in:2035
+//line lexer-generated.go.in:2034
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2434,7 +2434,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof55
 		}
 	st_case_55:
-//line lexer-generated.go.in:2077
+//line lexer-generated.go.in:2076
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2476,7 +2476,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof56
 		}
 	st_case_56:
-//line lexer-generated.go.in:2119
+//line lexer-generated.go.in:2118
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2518,7 +2518,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof57
 		}
 	st_case_57:
-//line lexer-generated.go.in:2161
+//line lexer-generated.go.in:2160
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2560,7 +2560,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof58
 		}
 	st_case_58:
-//line lexer-generated.go.in:2203
+//line lexer-generated.go.in:2202
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2602,7 +2602,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof59
 		}
 	st_case_59:
-//line lexer-generated.go.in:2245
+//line lexer-generated.go.in:2244
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2644,7 +2644,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof60
 		}
 	st_case_60:
-//line lexer-generated.go.in:2287
+//line lexer-generated.go.in:2286
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2686,7 +2686,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof61
 		}
 	st_case_61:
-//line lexer-generated.go.in:2329
+//line lexer-generated.go.in:2328
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2728,7 +2728,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof62
 		}
 	st_case_62:
-//line lexer-generated.go.in:2371
+//line lexer-generated.go.in:2370
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2772,7 +2772,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof63
 		}
 	st_case_63:
-//line lexer-generated.go.in:2415
+//line lexer-generated.go.in:2414
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2814,7 +2814,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof64
 		}
 	st_case_64:
-//line lexer-generated.go.in:2457
+//line lexer-generated.go.in:2456
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2856,7 +2856,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof65
 		}
 	st_case_65:
-//line lexer-generated.go.in:2499
+//line lexer-generated.go.in:2498
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2898,7 +2898,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof66
 		}
 	st_case_66:
-//line lexer-generated.go.in:2541
+//line lexer-generated.go.in:2540
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2940,7 +2940,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof67
 		}
 	st_case_67:
-//line lexer-generated.go.in:2583
+//line lexer-generated.go.in:2582
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2982,7 +2982,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof68
 		}
 	st_case_68:
-//line lexer-generated.go.in:2625
+//line lexer-generated.go.in:2624
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3024,7 +3024,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof69
 		}
 	st_case_69:
-//line lexer-generated.go.in:2667
+//line lexer-generated.go.in:2666
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3066,7 +3066,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof70
 		}
 	st_case_70:
-//line lexer-generated.go.in:2709
+//line lexer-generated.go.in:2708
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3108,7 +3108,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof71
 		}
 	st_case_71:
-//line lexer-generated.go.in:2751
+//line lexer-generated.go.in:2750
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3150,7 +3150,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof72
 		}
 	st_case_72:
-//line lexer-generated.go.in:2793
+//line lexer-generated.go.in:2792
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3192,7 +3192,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof73
 		}
 	st_case_73:
-//line lexer-generated.go.in:2835
+//line lexer-generated.go.in:2834
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3234,7 +3234,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof74
 		}
 	st_case_74:
-//line lexer-generated.go.in:2877
+//line lexer-generated.go.in:2876
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3276,7 +3276,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof75
 		}
 	st_case_75:
-//line lexer-generated.go.in:2919
+//line lexer-generated.go.in:2918
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3318,7 +3318,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof76
 		}
 	st_case_76:
-//line lexer-generated.go.in:2961
+//line lexer-generated.go.in:2960
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3360,7 +3360,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof77
 		}
 	st_case_77:
-//line lexer-generated.go.in:3003
+//line lexer-generated.go.in:3002
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3402,7 +3402,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof78
 		}
 	st_case_78:
-//line lexer-generated.go.in:3045
+//line lexer-generated.go.in:3044
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3491,7 +3491,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof79
 		}
 	st_case_79:
-//line lexer-generated.go.in:3134
+//line lexer-generated.go.in:3133
 		switch data[p] {
 		case 43:
 			goto tr35
@@ -3624,7 +3624,7 @@ func (l *Lexer) Lex() (Token, error) {
 //line NONE:1
 		ts = p
 
-//line lexer-generated.go.in:3234
+//line lexer-generated.go.in:3233
 		switch data[p] {
 		case 34:
 			goto tr142
@@ -3656,7 +3656,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof81
 		}
 	st_case_81:
-//line lexer-generated.go.in:3265
+//line lexer-generated.go.in:3264
 		switch data[p] {
 		case 34:
 			goto tr144
@@ -3848,7 +3848,7 @@ func (l *Lexer) Lex() (Token, error) {
 //line NONE:1
 		ts = p
 
-//line lexer-generated.go.in:3399
+//line lexer-generated.go.in:3398
 		switch data[p] {
 		case 10:
 			goto tr45
@@ -3876,7 +3876,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof83
 		}
 	st_case_83:
-//line lexer-generated.go.in:3426
+//line lexer-generated.go.in:3425
 		switch data[p] {
 		case 10:
 			goto tr45
@@ -3952,7 +3952,7 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof85
 		}
 	st_case_85:
-//line lexer-generated.go.in:3502
+//line lexer-generated.go.in:3501
 		switch data[p] {
 		case 36:
 			goto tr154
@@ -4373,7 +4373,7 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 	}
 
-//line lexer.rl:69
+//line lexer.rl:68
 
 	// store state in l
 	l.cs = cs
@@ -4384,8 +4384,9 @@ func (l *Lexer) Lex() (Token, error) {
 	l.act = act
 
 	if cs == 0 {
-		// TODO: handle error
 		err = fmt.Errorf("Unexpected token at %v %v", lineCount+1, (p-lineStart)+1)
+	} else if token.TokenType == EOF {
+		return Token{TokenType: TokenType(EOF), Pos: Pos{l.pe, l.pe, l.lineCount + 1, (l.pe - l.lineStart) + 1}, Text: nil}, nil
 	}
 
 	return token, err

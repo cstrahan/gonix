@@ -39,7 +39,8 @@ func NewLexer(data []byte) *Lexer {
 }
 
 const (
-	IF = iota
+	EOF = iota
+	IF
 	THEN
 	ELSE
 	ASSERT
@@ -98,7 +99,6 @@ const (
 	IND_STR          = 128
 	IND_STRING_OPEN  = 129
 	IND_STRING_CLOSE = 130
-	EOF              = 131
 )
 
 type Token struct {
