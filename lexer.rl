@@ -47,18 +47,6 @@ func (l *Lexer) Lex() (Token, error) {
     return Token{ TokenType: TokenType(EOF), Pos: Pos { l.pe, l.pe, l.lineCount+1, (l.pe-l.lineStart)+1 }, Text: nil }, nil
   }
 
-  // make go stop complaining about unused variables
-  _ = scanner_start
-  _ = scanner_first_final
-  _ = scanner_error
-  _ = scanner_en_main
-  //_ = _scanner_nfa_targs
-  //_ = _scanner_nfa_offsets
-  //_ = _scanner_nfa_push_actions
-  //_ = _scanner_nfa_pop_trans
-  _ = scanner_en_string
-  _ = scanner_en_ind_string
-
   // load state from l
   data := l.data
   pe := l.pe
@@ -73,10 +61,7 @@ func (l *Lexer) Lex() (Token, error) {
   eof := pe
   ts, te, act := 0, 0, 0
 
-  _, _, _, _, _, _ = top, ts, te, act, eof, stack
-
   token := Token{}
-  _ = token
 
   var err error
 
