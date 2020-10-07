@@ -56,7 +56,6 @@ func (l *Lexer) Lex() (Token, error) {
   stack := l.stack
   lineStart := l.lineStart
   lineCount := l.lineCount
-  act := l.act
 
   eof := pe
   ts, te, act := 0, 0, 0
@@ -72,7 +71,6 @@ func (l *Lexer) Lex() (Token, error) {
   l.top = top
   l.lineStart = lineStart
   l.lineCount = lineCount
-  l.act = act
 
   if cs == %%{ write error; }%% {
     err = fmt.Errorf("Unexpected token at %v %v", lineCount+1, (p-lineStart)+1)

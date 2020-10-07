@@ -72,7 +72,7 @@ func main() {
 
 	start := time.Now()
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 1; i++ {
 		lexer := NewLexer(file)
 
 		for {
@@ -82,7 +82,7 @@ func main() {
 			} else if t.TokenType == EOF {
 				break
 			}
-			//fmt.Println(printTok(t))
+			fmt.Println(printTok(t))
 		}
 	}
 
