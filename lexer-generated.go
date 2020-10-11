@@ -1,12 +1,7 @@
-//line lexer.rl:1
-
-//line lexer.rl:2
-
 package main
 
 import "fmt"
 
-//line lexer-generated.go.in:12
 const scanner_start int = 33
 const scanner_first_final int = 33
 const scanner_error int = 0
@@ -14,8 +9,6 @@ const scanner_error int = 0
 const scanner_en_string int = 80
 const scanner_en_ind_string int = 82
 const scanner_en_main int = 33
-
-//line lexer.rl:8
 
 func unescapeStr(s []byte) []byte {
 	t := []byte{}
@@ -78,7 +71,6 @@ func (l *Lexer) Lex() (Token, error) {
 
 	var err error
 
-//line lexer-generated.go.in:82
 	{
 		if p == pe {
 			goto _test_eof
@@ -441,7 +433,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st_out
 	tr3:
-//line lexer.rl:215
 		p = (te) - 1
 		{
 			token = Token{TokenType: TokenType(FLOAT), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]}
@@ -453,7 +444,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr6:
-//line lexer.rl:218
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(DOLLAR_CURLY), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -466,7 +456,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr7:
-//line lexer.rl:200
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(AND), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -479,7 +468,6 @@ func (l *Lexer) Lex() (Token, error) {
 		goto st33
 	tr9:
 		cs = 33
-//line lexer.rl:233
 		p = (te) - 1
 		{
 			token = Token{TokenType: TokenType(IND_STRING_OPEN), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -492,10 +480,8 @@ func (l *Lexer) Lex() (Token, error) {
 		goto _again
 	tr10:
 		cs = 33
-//line lexer.rl:87
 		lineStart = p + 1
 		lineCount++
-//line lexer.rl:233
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(IND_STRING_OPEN), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -507,7 +493,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto _again
 	tr12:
-//line NONE:1
 		switch act {
 		case 0:
 			{
@@ -719,7 +704,6 @@ func (l *Lexer) Lex() (Token, error) {
 
 		goto st33
 	tr16:
-//line lexer.rl:251
 		p = (te) - 1
 		{
 			token = Token{TokenType: TokenType(DOT), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -731,7 +715,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr21:
-//line lexer.rl:206
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(UPDATE), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -743,12 +726,10 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr24:
-//line lexer.rl:249
 		te = p + 1
 
 		goto st33
 	tr26:
-//line lexer.rl:196
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(LEQ), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -760,7 +741,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr28:
-//line lexer.rl:241
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(PATH), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]}
@@ -772,7 +752,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr29:
-//line lexer.rl:198
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(GEQ), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -784,7 +763,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr33:
-//line lexer.rl:202
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(OR), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -797,7 +775,6 @@ func (l *Lexer) Lex() (Token, error) {
 		goto st33
 	tr54:
 		cs = 33
-//line lexer.rl:254
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(DQUOTE), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -809,7 +786,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto _again
 	tr59:
-//line lexer.rl:264
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(LPAREN), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -821,7 +797,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr60:
-//line lexer.rl:266
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(RPAREN), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -833,7 +808,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr61:
-//line lexer.rl:189
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(STAR), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -845,7 +819,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr63:
-//line lexer.rl:262
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(COMMA), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -857,7 +830,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr69:
-//line lexer.rl:177
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(COLON), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -869,7 +841,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr70:
-//line lexer.rl:179
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(SCOLON), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -881,7 +852,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr74:
-//line lexer.rl:260
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(QMARK), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -893,7 +863,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr75:
-//line lexer.rl:181
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(AT), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -905,7 +874,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr77:
-//line lexer.rl:268
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(LBRACK), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -917,7 +885,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr78:
-//line lexer.rl:270
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(RBRACK), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -929,7 +896,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr88:
-//line lexer.rl:228
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(LCURLY), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -943,7 +909,6 @@ func (l *Lexer) Lex() (Token, error) {
 		goto st33
 	tr90:
 		cs = 33
-//line lexer.rl:221
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(RCURLY), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -959,7 +924,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto _again
 	tr92:
-//line lexer.rl:215
 		te = p
 		p--
 		{
@@ -972,13 +936,11 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr94:
-//line lexer.rl:246
 		te = p
 		p--
 
 		goto st33
 	tr95:
-//line lexer.rl:187
 		te = p
 		p--
 		{
@@ -991,7 +953,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr96:
-//line lexer.rl:194
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(NEQ), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -1003,14 +964,12 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr97:
-//line lexer.rl:248
 		te = p
 		p--
 
 		goto st33
 	tr98:
 		cs = 33
-//line lexer.rl:233
 		te = p
 		p--
 		{
@@ -1023,7 +982,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto _again
 	tr99:
-//line lexer.rl:185
 		te = p
 		p--
 		{
@@ -1036,7 +994,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr101:
-//line lexer.rl:237
 		te = p
 		p--
 		{
@@ -1049,7 +1006,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr102:
-//line lexer.rl:183
 		te = p
 		p--
 		{
@@ -1062,7 +1018,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr103:
-//line lexer.rl:204
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(IMPL), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -1074,7 +1029,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr104:
-//line lexer.rl:251
 		te = p
 		p--
 		{
@@ -1087,7 +1041,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr108:
-//line lexer.rl:213
 		te = p
 		p--
 		{
@@ -1100,7 +1053,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr109:
-//line lexer.rl:258
 		te = p
 		p--
 		{
@@ -1113,7 +1065,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr110:
-//line lexer.rl:192
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(EQ), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -1125,7 +1076,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr112:
-//line lexer.rl:211
 		te = p
 		p--
 		{
@@ -1138,7 +1088,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr113:
-//line lexer.rl:243
 		te = p
 		p--
 		{
@@ -1151,7 +1100,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr124:
-//line lexer.rl:167
 		te = p
 		p--
 		{
@@ -1164,7 +1112,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	tr141:
-//line lexer.rl:239
 		te = p
 		p--
 		{
@@ -1177,20 +1124,16 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st33
 	st33:
-//line NONE:1
 		ts = 0
 
-//line NONE:1
 		act = 0
 
 		if p++; p == pe {
 			goto _test_eof33
 		}
 	st_case_33:
-//line NONE:1
 		ts = p
 
-//line lexer-generated.go.in:834
 		switch data[p] {
 		case 0:
 			goto st1
@@ -1313,7 +1256,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st0
 	tr2:
-//line NONE:1
 		te = p + 1
 
 		goto st34
@@ -1322,7 +1264,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof34
 		}
 	st_case_34:
-//line lexer-generated.go.in:966
 		switch data[p] {
 		case 69:
 			goto st3
@@ -1367,7 +1308,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr92
 	tr52:
-//line lexer.rl:87
 		lineStart = p + 1
 		lineCount++
 		goto st36
@@ -1376,7 +1316,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof36
 		}
 	st_case_36:
-//line lexer-generated.go.in:1019
 		switch data[p] {
 		case 9:
 			goto st36
@@ -1437,7 +1376,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st0
 	tr8:
-//line NONE:1
 		te = p + 1
 
 		goto st39
@@ -1446,7 +1384,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof39
 		}
 	st_case_39:
-//line lexer-generated.go.in:1089
 		switch data[p] {
 		case 10:
 			goto tr10
@@ -1467,10 +1404,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr9
 	tr62:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:185
 		act = 27
 		goto st40
 	st40:
@@ -1478,7 +1413,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof40
 		}
 	st_case_40:
-//line lexer-generated.go.in:1121
 		switch data[p] {
 		case 43:
 			goto tr100
@@ -1501,17 +1435,13 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr99
 	tr17:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:175
 		act = 22
 		goto st41
 	tr100:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:208
 		act = 38
 		goto st41
 	st41:
@@ -1519,7 +1449,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof41
 		}
 	st_case_41:
-//line lexer-generated.go.in:1162
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1597,10 +1526,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr12
 	tr15:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:237
 		act = 46
 		goto st42
 	st42:
@@ -1608,7 +1535,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof42
 		}
 	st_case_42:
-//line lexer-generated.go.in:1251
 		switch data[p] {
 		case 43:
 			goto tr15
@@ -1631,10 +1557,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr101
 	tr64:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:183
 		act = 26
 		goto st43
 	st43:
@@ -1642,7 +1566,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof43
 		}
 	st_case_43:
-//line lexer-generated.go.in:1285
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1667,10 +1590,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr102
 	tr65:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:251
 		act = 53
 		goto st44
 	st44:
@@ -1678,7 +1599,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof44
 		}
 	st_case_44:
-//line lexer-generated.go.in:1321
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1733,10 +1653,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr16
 	tr106:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:215
 		act = 41
 		goto st45
 	st45:
@@ -1744,7 +1662,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof45
 		}
 	st_case_45:
-//line lexer-generated.go.in:1387
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1837,10 +1754,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr3
 	tr19:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:215
 		act = 41
 		goto st46
 	st46:
@@ -1848,7 +1763,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof46
 		}
 	st_case_46:
-//line lexer-generated.go.in:1491
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1904,7 +1818,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st0
 	tr22:
-//line lexer.rl:87
 		lineStart = p + 1
 		lineCount++
 		goto st15
@@ -1913,7 +1826,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof15
 		}
 	st_case_15:
-//line lexer-generated.go.in:1555
 		switch data[p] {
 		case 10:
 			goto tr22
@@ -1936,10 +1848,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st15
 	tr67:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:213
 		act = 40
 		goto st47
 	st47:
@@ -1947,7 +1857,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof47
 		}
 	st_case_47:
-//line lexer-generated.go.in:1589
 		switch data[p] {
 		case 43:
 			goto st9
@@ -1975,10 +1884,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr108
 	tr68:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:213
 		act = 40
 		goto st48
 	st48:
@@ -1986,7 +1893,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof48
 		}
 	st_case_48:
-//line lexer-generated.go.in:1628
 		switch data[p] {
 		case 43:
 			goto st9
@@ -2119,73 +2025,53 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st0
 	tr76:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st50
 	tr118:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:161
 		act = 15
 		goto st50
 	tr121:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:159
 		act = 14
 		goto st50
 	tr122:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:155
 		act = 12
 		goto st50
 	tr129:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:171
 		act = 20
 		goto st50
 	tr131:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:165
 		act = 17
 		goto st50
 	tr132:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:173
 		act = 21
 		goto st50
 	tr134:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:169
 		act = 19
 		goto st50
 	tr137:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:157
 		act = 13
 		goto st50
 	tr140:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:163
 		act = 16
 		goto st50
 	st50:
@@ -2193,7 +2079,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof50
 		}
 	st_case_50:
-//line lexer-generated.go.in:1835
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2342,10 +2227,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr113
 	tr79:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st53
 	st53:
@@ -2353,7 +2236,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof53
 		}
 	st_case_53:
-//line lexer-generated.go.in:1995
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2380,10 +2262,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr80:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st54
 	st54:
@@ -2391,7 +2271,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof54
 		}
 	st_case_54:
-//line lexer-generated.go.in:2033
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2422,10 +2301,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr114:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st55
 	st55:
@@ -2433,7 +2310,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof55
 		}
 	st_case_55:
-//line lexer-generated.go.in:2075
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2464,10 +2340,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr115:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st56
 	st56:
@@ -2475,7 +2349,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof56
 		}
 	st_case_56:
-//line lexer-generated.go.in:2117
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2506,10 +2379,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr116:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st57
 	st57:
@@ -2517,7 +2388,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof57
 		}
 	st_case_57:
-//line lexer-generated.go.in:2159
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2548,10 +2418,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr117:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st58
 	st58:
@@ -2559,7 +2427,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof58
 		}
 	st_case_58:
-//line lexer-generated.go.in:2201
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2590,10 +2457,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr81:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st59
 	st59:
@@ -2601,7 +2466,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof59
 		}
 	st_case_59:
-//line lexer-generated.go.in:2243
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2632,10 +2496,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr119:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st60
 	st60:
@@ -2643,7 +2505,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof60
 		}
 	st_case_60:
-//line lexer-generated.go.in:2285
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2674,10 +2535,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr120:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st61
 	st61:
@@ -2685,7 +2544,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof61
 		}
 	st_case_61:
-//line lexer-generated.go.in:2327
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2716,10 +2574,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr82:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st62
 	st62:
@@ -2727,7 +2583,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof62
 		}
 	st_case_62:
-//line lexer-generated.go.in:2369
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2760,10 +2615,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr123:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:167
 		act = 18
 		goto st63
 	st63:
@@ -2771,7 +2624,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof63
 		}
 	st_case_63:
-//line lexer-generated.go.in:2413
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2802,10 +2654,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr124
 	tr125:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st64
 	st64:
@@ -2813,7 +2663,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof64
 		}
 	st_case_64:
-//line lexer-generated.go.in:2455
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2844,10 +2693,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr126:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st65
 	st65:
@@ -2855,7 +2702,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof65
 		}
 	st_case_65:
-//line lexer-generated.go.in:2497
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2886,10 +2732,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr127:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st66
 	st66:
@@ -2897,7 +2741,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof66
 		}
 	st_case_66:
-//line lexer-generated.go.in:2539
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2928,10 +2771,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr128:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st67
 	st67:
@@ -2939,7 +2780,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof67
 		}
 	st_case_67:
-//line lexer-generated.go.in:2581
 		switch data[p] {
 		case 39:
 			goto st51
@@ -2970,10 +2810,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr83:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st68
 	st68:
@@ -2981,7 +2819,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof68
 		}
 	st_case_68:
-//line lexer-generated.go.in:2623
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3012,10 +2849,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr130:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st69
 	st69:
@@ -3023,7 +2858,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof69
 		}
 	st_case_69:
-//line lexer-generated.go.in:2665
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3054,10 +2888,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr84:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st70
 	st70:
@@ -3065,7 +2897,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof70
 		}
 	st_case_70:
-//line lexer-generated.go.in:2707
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3096,10 +2927,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr85:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st71
 	st71:
@@ -3107,7 +2936,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof71
 		}
 	st_case_71:
-//line lexer-generated.go.in:2749
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3138,10 +2966,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr133:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st72
 	st72:
@@ -3149,7 +2975,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof72
 		}
 	st_case_72:
-//line lexer-generated.go.in:2791
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3180,10 +3005,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr86:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st73
 	st73:
@@ -3191,7 +3014,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof73
 		}
 	st_case_73:
-//line lexer-generated.go.in:2833
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3222,10 +3044,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr135:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st74
 	st74:
@@ -3233,7 +3053,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof74
 		}
 	st_case_74:
-//line lexer-generated.go.in:2875
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3264,10 +3083,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr136:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st75
 	st75:
@@ -3275,7 +3092,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof75
 		}
 	st_case_75:
-//line lexer-generated.go.in:2917
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3306,10 +3122,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr87:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st76
 	st76:
@@ -3317,7 +3131,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof76
 		}
 	st_case_76:
-//line lexer-generated.go.in:2959
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3348,10 +3161,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr138:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st77
 	st77:
@@ -3359,7 +3170,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof77
 		}
 	st_case_77:
-//line lexer-generated.go.in:3001
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3390,10 +3200,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr112
 	tr139:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:211
 		act = 39
 		goto st78
 	st78:
@@ -3401,7 +3209,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof78
 		}
 	st_case_78:
-//line lexer-generated.go.in:3043
 		switch data[p] {
 		case 39:
 			goto st51
@@ -3479,10 +3286,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr12
 	tr35:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:239
 		act = 47
 		goto st79
 	st79:
@@ -3490,7 +3295,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof79
 		}
 	st_case_79:
-//line lexer-generated.go.in:3132
 		switch data[p] {
 		case 43:
 			goto tr35
@@ -3513,7 +3317,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr141
 	tr36:
-//line lexer.rl:112
 		p = (te) - 1
 		{
 			token = Token{TokenType: TokenType(STR), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]} // ?
@@ -3526,13 +3329,11 @@ func (l *Lexer) Lex() (Token, error) {
 		goto st80
 	tr38:
 		cs = 80
-//line lexer.rl:101
 		te = p + 1
 		{
 			// don't consume the final " char.
 			// we'll set the next state back to string,
-			// which will handle emitting the final " char
-			// and popping the stack.
+			// which will handle emitting the final " char.
 			p--
 
 			token = Token{TokenType: TokenType(STR), Pos: Pos{ts, te - 1, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts : te-1]}
@@ -3544,7 +3345,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto _again
 	tr40:
-//line NONE:1
 		switch act {
 		case 0:
 			{
@@ -3567,7 +3367,6 @@ func (l *Lexer) Lex() (Token, error) {
 		goto st80
 	tr42:
 		cs = 80
-//line lexer.rl:114
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(DOLLAR_CURLY), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -3585,7 +3384,6 @@ func (l *Lexer) Lex() (Token, error) {
 		goto _again
 	tr142:
 		cs = 80
-//line lexer.rl:123
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(DQUOTE), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -3597,7 +3395,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto _again
 	tr144:
-//line lexer.rl:112
 		te = p
 		p--
 		{
@@ -3610,20 +3407,16 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st80
 	st80:
-//line NONE:1
 		ts = 0
 
-//line NONE:1
 		act = 0
 
 		if p++; p == pe {
 			goto _test_eof80
 		}
 	st_case_80:
-//line NONE:1
 		ts = p
 
-//line lexer-generated.go.in:3232
 		switch data[p] {
 		case 34:
 			goto tr142
@@ -3634,20 +3427,15 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr37
 	tr37:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:112
 		act = 2
 		goto st81
 	tr41:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:87
 		lineStart = p + 1
 		lineCount++
-//line lexer.rl:112
 		act = 2
 		goto st81
 	st81:
@@ -3655,7 +3443,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof81
 		}
 	st_case_81:
-//line lexer-generated.go.in:3263
 		switch data[p] {
 		case 34:
 			goto tr144
@@ -3703,7 +3490,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr37
 	tr43:
-//line lexer.rl:131
 		p = (te) - 1
 		{
 			token = Token{TokenType: TokenType(IND_STR), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: data[ts:te]}
@@ -3716,7 +3502,6 @@ func (l *Lexer) Lex() (Token, error) {
 		goto st82
 	tr46:
 		cs = 82
-//line lexer.rl:139
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(DOLLAR_CURLY), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -3734,7 +3519,6 @@ func (l *Lexer) Lex() (Token, error) {
 		goto _again
 	tr47:
 		cs = 82
-//line lexer.rl:147
 		p = (te) - 1
 		{
 			token = Token{TokenType: TokenType(IND_STRING_CLOSE), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: nil}
@@ -3746,7 +3530,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto _again
 	tr48:
-//line lexer.rl:137
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(IND_STR), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: unescapeStr(data[ts+2 : te])}
@@ -3758,10 +3541,8 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st82
 	tr49:
-//line lexer.rl:87
 		lineStart = p + 1
 		lineCount++
-//line lexer.rl:137
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(IND_STR), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: unescapeStr(data[ts+2 : te])}
@@ -3773,7 +3554,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st82
 	tr148:
-//line lexer.rl:131
 		te = p
 		p--
 		{
@@ -3786,7 +3566,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st82
 	tr151:
-//line lexer.rl:150
 		te = p
 		p--
 		{
@@ -3800,7 +3579,6 @@ func (l *Lexer) Lex() (Token, error) {
 		goto st82
 	tr153:
 		cs = 82
-//line lexer.rl:147
 		te = p
 		p--
 		{
@@ -3813,7 +3591,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto _again
 	tr154:
-//line lexer.rl:133
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(IND_STR), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: []byte("$")}
@@ -3825,7 +3602,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st82
 	tr155:
-//line lexer.rl:135
 		te = p + 1
 		{
 			token = Token{TokenType: TokenType(IND_STR), Pos: Pos{ts, te, lineCount + 1, (ts - lineStart) + 1}, Text: []byte("'")}
@@ -3837,17 +3613,14 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto st82
 	st82:
-//line NONE:1
 		ts = 0
 
 		if p++; p == pe {
 			goto _test_eof82
 		}
 	st_case_82:
-//line NONE:1
 		ts = p
 
-//line lexer-generated.go.in:3397
 		switch data[p] {
 		case 10:
 			goto tr45
@@ -3858,15 +3631,12 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr44
 	tr44:
-//line NONE:1
 		te = p + 1
 
 		goto st83
 	tr45:
-//line NONE:1
 		te = p + 1
 
-//line lexer.rl:87
 		lineStart = p + 1
 		lineCount++
 		goto st83
@@ -3875,7 +3645,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof83
 		}
 	st_case_83:
-//line lexer-generated.go.in:3424
 		switch data[p] {
 		case 10:
 			goto tr45
@@ -3942,7 +3711,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 		goto tr44
 	tr152:
-//line NONE:1
 		te = p + 1
 
 		goto st85
@@ -3951,7 +3719,6 @@ func (l *Lexer) Lex() (Token, error) {
 			goto _test_eof85
 		}
 	st_case_85:
-//line lexer-generated.go.in:3500
 		switch data[p] {
 		case 36:
 			goto tr154
@@ -4372,8 +4139,6 @@ func (l *Lexer) Lex() (Token, error) {
 		}
 	}
 
-//line lexer.rl:67
-
 	// store state in l
 	l.cs = cs
 	l.p = p
@@ -4389,5 +4154,3 @@ func (l *Lexer) Lex() (Token, error) {
 
 	return token, err
 }
-
-//line lexer.rl:279

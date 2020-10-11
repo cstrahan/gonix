@@ -101,8 +101,7 @@ func (l *Lexer) Lex() (Token, error) {
                   {
                     // don't consume the final " char.
                     // we'll set the next state back to string,
-                    // which will handle emitting the final " char
-                    // and popping the stack.
+                    // which will handle emitting the final " char.
                     fhold;
                     EMIT_TEXT(STR, ts, te-1, data[ts:te-1]);
                     fnext string;
