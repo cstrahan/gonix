@@ -2,7 +2,7 @@ with import <nixpkgs> { };
 
 runCommand "dummy" {
   buildInputs = [
-    go
+    #go
     stdenv openssl pkgconfig
     cyrus_sasl # for mgo
     ragel
@@ -11,7 +11,7 @@ runCommand "dummy" {
   ];
   shellHook = ''
     unset SSL_CERT_FILE
-    export GOPATH=$(readlink -f ../../../..):${go}/share/go
+    #export GOPATH=$(readlink -f ../../../..):${go}/share/go
     PATH=$(readlink -f ../../bin):$PATH
   '';
 } ""
